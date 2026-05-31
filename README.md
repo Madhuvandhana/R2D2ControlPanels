@@ -6,27 +6,41 @@ A dual Android application and ESP32 firmware system designed to control interac
 
 Below is a walkthrough demonstration of the custom Jetpack Compose Android controller app operating the R2-D2 Dome interface:
 
-https://github.com/Madhuvandhana/R2D2ControlPanels/assets/r2controlsapp.mp4
+![Walkthrough App Demo](r2controlsapp.gif)
 
-*(Note: If the embedded player does not load, you can view the raw file at `r2controlsapp.mp4` inside the repository).*
+*(Note: If the GIF does not render, you can view the raw file at `r2controlsapp.gif` inside the repository).*
 
 ---
 
-## System Architecture
+## Astropixels & ReelTwo Library Integration
 
-The project consists of three main components:
-1. **Android App (`app/`)**: A native Android app built using modern Jetpack Compose, Hilt, and Coroutines. Includes controls for:
-   - ESP32 BLE peripheral device pairing and status indicators.
-   - Dynamic 2D Canvas vector rendering of the R2-D2 Dome State, showing live status of the physical hardware, pie panels, logic display messages, and active projection beam.
-   - Interactive Holoprojector Pan/Tilt servos via drag-and-drop joystick controller.
-   - Mechanical pie panel flap triggers.
-   - Rear logic display text messaging.
-2. **ESP32 Firmware (`sketch_r2_d2/`)**: An Arduino sketch/firmware codebase that exposes BLE Services to receive controller instructions, translating packets into:
-   - Servo motor adjustments (Pan/Tilt project angles).
-   - Addressable LED color changes.
-   - Solenoid/servo operations for dome panels.
-   - Serial telemetry data outputs.
-3. **Web Simulator (`r2d2-demo/`)**: An interactive HTML5 simulation page displaying the telemetry console, SVG vector animation feedback, and a guided tour.
+The project communicates command packets to the **Astropixels** board, which controls the WS2812 RGB LEDs. The Astropixels system runs on an ESP32 controller using the [ReelTwo Library by dpoulson](https://github.com/dpoulson/Reeltwo), combining structural control logic for multiple club-standard sub-systems (Logic Displays, PSI LEDs, and Holoprojector controls).
+
+### Communication Flow
+1. The **Android App** pairs with the main **ESP32 Dev Board** via BLE.
+2. The main ESP32 parses commands and forwards them via its hardware **Serial2** bus (Pins 16 and 17) to the **Astropixels ESP32** controller.
+3. The Astropixels ESP32 running the **ReelTwo library** decodes standard serial commands (e.g., `@AP...` and `@3M...`) and controls the WS2812 LED strings and servos directly.
+
+### Hardware Pinout Configuration (ESP32 Board)
+
+The default 30-pin ESP32 dev board uses the following GPIO pin mapping to connect the dome peripherals:
+
+| Peripheral System | Default GPIO Pin | Description |
+| :--- | :---: | :--- |
+| **RLD** | `33` | Rear Logic Display Signal (ReelTwo library control) |
+| **FLD** | `15` | Front Logic Display Signal (ReelTwo library control) |
+| **FPSI** | `32` | Front PSI Status WS2812 RGB LED string |
+| **RPSI** | `23` | Rear PSI Status WS2812 RGB LED string |
+| **THP** | `27` | Top Holoprojector Servo / Light |
+| **RHP** | `26` | Rear Holoprojector Servo / Light |
+| **FHP** | `25` | Front Holoprojector Servo / Light |
+| **AUX1** | `2` | Auxiliary Port 1 |
+| **AUX2** | `4` | Auxiliary Port 2 |
+| **AUX3** | `5` | Auxiliary Port 3 |
+| **AUX4** | `18` | Auxiliary Port 4 |
+| **AUX5** | `19` | Auxiliary Port 5 |
+| **Serial2_RX** | `16` | Hardware Serial 2 Receive (to parse main controller packets) |
+| **Serial2_TX** | `17` | Hardware Serial 2 Transmit (to parse main controller packets) |
 
 ---
 
