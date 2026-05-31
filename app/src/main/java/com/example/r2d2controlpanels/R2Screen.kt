@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -43,11 +44,342 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlin.math.sqrt
+
+@Composable
+fun R2DomeStateCard(
+    connectionState: BluetoothState,
+    panelsOpen: Boolean,
+    holoActive: Boolean,
+    rearLogicText: String,
+    pan: Float,
+    tilt: Float
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFF101923)
+        ),
+        border = BorderStroke(
+            1.dp,
+            Color(0xFF284866)
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(18.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Start
+            ) {
+                Text(
+                    text = "> R2-D2 DOME STATE",
+                    color = Color(0xFF64C8FF),
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Canvas drawing representing the dome head
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+                    .background(
+                        Brush.radialGradient(
+                            colors = listOf(Color(0xFF151D38), Color(0xFF080C18))
+                        ),
+                        RoundedCornerShape(12.dp)
+                    )
+                    .border(2.dp, Color(0xFF2B4C85).copy(alpha = 0.6f), RoundedCornerShape(12.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Canvas(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(12.dp)
+                ) {
+                    val w = size.width
+                    val h = size.height
+
+                    // Center of the dome base
+                    val cx = w / 2f
+                    val cy = h * 0.75f
+                    val domeRadius = 75.dp.toPx()
+
+                    // 1. Draw projection beam if holoActive is true
+                    if (holoActive) {
+                        val beamPath = androidx.compose.ui.graphics.Path().apply {
+                            moveTo(cx, cy - 10.dp.toPx())
+                            lineTo(cx - 60.dp.toPx(), h)
+                            lineTo(cx + 60.dp.toPx(), h)
+                            close()
+                        }
+                        drawPath(
+                            path = beamPath,
+                            brush = Brush.verticalGradient(
+                                colors = listOf(Color(0x9964DFDF), Color(0x0064DFDF))
+                            )
+                        )
+                    }
+
+                    // 2. Draw Main Dome Body (arc from 180 degrees, sweep 180)
+                    val domeRect = androidx.compose.ui.geometry.Rect(
+                        cx - domeRadius,
+                        cy - domeRadius,
+                        cx + domeRadius,
+                        cy + domeRadius
+                    )
+                    
+                    drawArc(
+                        brush = Brush.linearGradient(
+                            colors = listOf(Color(0xFFEAEDF2), Color(0xFF738299))
+                        ),
+                        startAngle = 180f,
+                        sweepAngle = 180f,
+                        useCenter = true,
+                        topLeft = domeRect.topLeft,
+                        size = domeRect.size
+                    )
+                    
+                    // Dome contour outline
+                    drawArc(
+                        color = Color(0xFF4D5A6E),
+                        startAngle = 180f,
+                        sweepAngle = 180f,
+                        useCenter = false,
+                        topLeft = domeRect.topLeft,
+                        size = domeRect.size,
+                        style = Stroke(width = 3.dp.toPx())
+                    )
+
+                    // 3. Horizontal Base Rim
+                    drawRect(
+                        brush = Brush.linearGradient(
+                            colors = listOf(Color(0xFFEAEDF2), Color(0xFF738299))
+                        ),
+                        topLeft = Offset(cx - domeRadius, cy),
+                        size = androidx.compose.ui.geometry.Size(domeRadius * 2, 8.dp.toPx())
+                    )
+                    drawRect(
+                        color = Color(0xFF4D5A6E),
+                        topLeft = Offset(cx - domeRadius, cy),
+                        size = androidx.compose.ui.geometry.Size(domeRadius * 2, 8.dp.toPx()),
+                        style = Stroke(width = 2.dp.toPx())
+                    )
+                    
+                    // Draw dark horizontal separation lines
+                    drawLine(
+                        color = Color(0xFF222222),
+                        start = Offset(cx - domeRadius, cy + 2.dp.toPx()),
+                        end = Offset(cx + domeRadius, cy + 2.dp.toPx()),
+                        strokeWidth = 2f
+                    )
+
+                    // 4. Blue Inlays (Static left/right paths)
+                    val blueMetalBrush = Brush.verticalGradient(
+                        colors = listOf(Color(0xFF0D3C94), Color(0xFF041A4A))
+                    )
+
+                    val leftInlay = androidx.compose.ui.graphics.Path().apply {
+                        moveTo(cx - 45.dp.toPx(), cy - 55.dp.toPx())
+                        lineTo(cx - 28.dp.toPx(), cy - 52.dp.toPx())
+                        lineTo(cx - 28.dp.toPx(), cy - 32.dp.toPx())
+                        lineTo(cx - 45.dp.toPx(), cy - 38.dp.toPx())
+                        close()
+                    }
+                    drawPath(path = leftInlay, brush = blueMetalBrush)
+                    drawPath(path = leftInlay, color = Color(0xFF222222), style = Stroke(width = 1.dp.toPx()))
+
+                    val rightInlay = androidx.compose.ui.graphics.Path().apply {
+                        moveTo(cx + 28.dp.toPx(), cy - 52.dp.toPx())
+                        lineTo(cx + 45.dp.toPx(), cy - 55.dp.toPx())
+                        lineTo(cx + 45.dp.toPx(), cy - 38.dp.toPx())
+                        lineTo(cx + 28.dp.toPx(), cy - 32.dp.toPx())
+                        close()
+                    }
+                    drawPath(path = rightInlay, brush = blueMetalBrush)
+                    drawPath(path = rightInlay, color = Color(0xFF222222), style = Stroke(width = 1.dp.toPx()))
+
+                    // 5. Dynamic Pie Panels (open/close animation shifts)
+                    val panelShiftY = if (panelsOpen) -12.dp.toPx() else 0f
+                    val panelColor = if (panelsOpen) Color(0xFF7D8B9C) else Color(0xFF9BA8B8)
+
+                    // Top Left panel
+                    val topLeftPanel = androidx.compose.ui.graphics.Path().apply {
+                        moveTo(cx - 65.dp.toPx(), cy - 20.dp.toPx() + panelShiftY)
+                        lineTo(cx - 38.dp.toPx(), cy - 20.dp.toPx() + panelShiftY)
+                        lineTo(cx - 38.dp.toPx(), cy - 5.dp.toPx() + panelShiftY)
+                        lineTo(cx - 65.dp.toPx(), cy - 10.dp.toPx() + panelShiftY)
+                        close()
+                    }
+                    drawPath(path = topLeftPanel, color = panelColor)
+                    drawPath(path = topLeftPanel, color = Color(0xFF4D5A6E), style = Stroke(width = 1.5.dp.toPx()))
+
+                    // Top Right panel
+                    val topRightPanel = androidx.compose.ui.graphics.Path().apply {
+                        moveTo(cx + 38.dp.toPx(), cy - 20.dp.toPx() + panelShiftY)
+                        lineTo(cx + 65.dp.toPx(), cy - 20.dp.toPx() + panelShiftY)
+                        lineTo(cx + 65.dp.toPx(), cy - 10.dp.toPx() + panelShiftY)
+                        lineTo(cx + 38.dp.toPx(), cy - 5.dp.toPx() + panelShiftY)
+                        close()
+                    }
+                    drawPath(path = topRightPanel, color = panelColor)
+                    drawPath(path = topRightPanel, color = Color(0xFF4D5A6E), style = Stroke(width = 1.5.dp.toPx()))
+
+                    // Rear Center High panel
+                    val rearPanel = androidx.compose.ui.graphics.Path().apply {
+                        moveTo(cx - 18.dp.toPx(), cy - 62.dp.toPx() + panelShiftY)
+                        lineTo(cx + 18.dp.toPx(), cy - 62.dp.toPx() + panelShiftY)
+                        lineTo(cx + 12.dp.toPx(), cy - 48.dp.toPx() + panelShiftY)
+                        lineTo(cx - 12.dp.toPx(), cy - 48.dp.toPx() + panelShiftY)
+                        close()
+                    }
+                    drawPath(path = rearPanel, color = panelColor)
+                    drawPath(path = rearPanel, color = Color(0xFF4D5A6E), style = Stroke(width = 1.5.dp.toPx()))
+
+                    // 6. Main LED (PSI) Status Display
+                    drawCircle(
+                        color = Color(0xFF111111),
+                        radius = 8.dp.toPx(),
+                        center = Offset(cx, cy - 25.dp.toPx())
+                    )
+                    drawCircle(
+                        color = Color(0xFF333333),
+                        radius = 8.dp.toPx(),
+                        center = Offset(cx, cy - 25.dp.toPx()),
+                        style = Stroke(width = 1.5.dp.toPx())
+                    )
+                    
+                    val statusLedColor = when (connectionState) {
+                        BluetoothState.CONNECTED -> Color(0xFF0055FF) // Solid blue lens glow
+                        BluetoothState.CONNECTING -> Color(0xFFFFD54F)
+                        BluetoothState.DISCONNECTED -> Color(0xFFFF5252)
+                    }
+                    drawCircle(
+                        color = statusLedColor,
+                        radius = 5.dp.toPx(),
+                        center = Offset(cx, cy - 25.dp.toPx())
+                    )
+                    // Core light highlight
+                    drawCircle(
+                        color = Color.White.copy(alpha = 0.8f),
+                        radius = 2.dp.toPx(),
+                        center = Offset(cx, cy - 25.dp.toPx())
+                    )
+
+                    // 7. Front Logic Display Box showing "R2-D2 OK" text
+                    drawRect(
+                        color = Color(0xFF050811),
+                        topLeft = Offset(cx - 30.dp.toPx(), cy - 45.dp.toPx()),
+                        size = androidx.compose.ui.geometry.Size(60.dp.toPx(), 12.dp.toPx())
+                    )
+                    drawRect(
+                        color = Color(0xFF2A3D5E),
+                        topLeft = Offset(cx - 30.dp.toPx(), cy - 45.dp.toPx()),
+                        size = androidx.compose.ui.geometry.Size(60.dp.toPx(), 12.dp.toPx()),
+                        style = Stroke(width = 1.dp.toPx())
+                    )
+
+                    // 8. Holo Projector Eyeball
+                    // Socket base
+                    drawOval(
+                        color = Color(0xFF1D2F4D),
+                        topLeft = Offset(cx - 12.dp.toPx(), cy - 8.dp.toPx()),
+                        size = androidx.compose.ui.geometry.Size(24.dp.toPx(), 8.dp.toPx())
+                    )
+                    drawOval(
+                        color = Color(0xFF111111),
+                        topLeft = Offset(cx - 12.dp.toPx(), cy - 8.dp.toPx()),
+                        size = androidx.compose.ui.geometry.Size(24.dp.toPx(), 8.dp.toPx()),
+                        style = Stroke(width = 1.dp.toPx())
+                    )
+
+                    // Moving eyeball eyeball lens center responds slightly to pan/tilt offset
+                    val offsetX = ((pan - 90f) / 90f) * 4.dp.toPx()
+                    val offsetY = ((tilt - 90f) / 90f) * 3.dp.toPx()
+
+                    drawCircle(
+                        brush = Brush.linearGradient(
+                            colors = listOf(Color(0xFFEAEDF2), Color(0xFF738299))
+                        ),
+                        radius = 7.dp.toPx(),
+                        center = Offset(cx + offsetX, cy - 8.dp.toPx() + offsetY)
+                    )
+                    drawCircle(
+                        color = Color(0xFF111111),
+                        radius = 7.dp.toPx(),
+                        center = Offset(cx + offsetX, cy - 8.dp.toPx() + offsetY),
+                        style = Stroke(width = 1.dp.toPx())
+                    )
+
+                    // Pupil & active glow
+                    drawCircle(
+                        color = Color(0xFF111111),
+                        radius = 4.dp.toPx(),
+                        center = Offset(cx + offsetX, cy - 8.dp.toPx() + offsetY)
+                    )
+                    drawCircle(
+                        color = if (holoActive) Color(0xFF64DFDF) else Color(0x3364DFDF),
+                        radius = 2.dp.toPx(),
+                        center = Offset(cx + offsetX, cy - 8.dp.toPx() + offsetY)
+                    )
+                }
+
+                // Front logic text display drawn as overlay
+                Text(
+                    text = "R2-D2 OK",
+                    color = Color(0xFF52ECFF),
+                    fontSize = 7.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = FontFamily.Monospace,
+                    modifier = Modifier.align(Alignment.Center).offset(y = (-39).dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Rear logic display monitor matching style
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFF090E17), RoundedCornerShape(8.dp))
+                    .border(1.dp, Color(0xFF1F2F45), RoundedCornerShape(8.dp))
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Rear Logic Display Emulator:",
+                    color = Color(0xFF8FA0C0),
+                    fontSize = 12.sp
+                )
+                Box(
+                    modifier = Modifier
+                        .background(Color(0xFF11051A), RoundedCornerShape(4.dp))
+                        .border(1.dp, Color(0xFF8E00D9), RoundedCornerShape(4.dp))
+                        .padding(horizontal = 10.dp, vertical = 4.dp)
+                ) {
+                    Text(
+                        text = if (rearLogicText.isEmpty()) "SYS-ONLINE" else rearLogicText,
+                        color = Color(0xFFDF4DFF),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = FontFamily.Monospace
+                    )
+                }
+            }
+        }
+    }
+}
 
 @Composable
 fun R2Screen(
@@ -80,6 +412,30 @@ fun R2Screen(
 
     val rearLogicMessage = remember {
         mutableStateOf("")
+    }
+
+    // ==================================================
+    // HOISTED STATES FOR R2 DOME STATE
+    // ==================================================
+
+    val panelsOpen = remember {
+        mutableStateOf(false)
+    }
+
+    val holoLightsEnabled = remember {
+        mutableStateOf(true)
+    }
+
+    val frontHoloOn = remember {
+        mutableStateOf(true)
+    }
+
+    val topHoloOn = remember {
+        mutableStateOf(true)
+    }
+
+    val rearHoloOn = remember {
+        mutableStateOf(true)
     }
 
     // ==================================================
@@ -257,6 +613,23 @@ fun R2Screen(
                     )
                 }
             }
+
+            Spacer(
+                modifier = Modifier.height(28.dp)
+            )
+
+            // ==================================================
+            // R2-D2 DOME STATE VISUALIZER
+            // ==================================================
+
+            R2DomeStateCard(
+                connectionState = bluetoothController.connectionState,
+                panelsOpen = panelsOpen.value,
+                holoActive = holoLightsEnabled.value,
+                rearLogicText = rearLogicMessage.value,
+                pan = pan.floatValue,
+                tilt = tilt.floatValue
+            )
 
             Spacer(
                 modifier = Modifier.height(28.dp)
@@ -664,7 +1037,7 @@ fun R2Screen(
                                 ),
 
                             onClick = {
-
+                                panelsOpen.value = true
                                 bluetoothController.send(
                                     "OPEN_TOP\n"
                                 )
@@ -689,7 +1062,7 @@ fun R2Screen(
                                 ),
 
                             onClick = {
-
+                                panelsOpen.value = false
                                 bluetoothController.send(
                                     "CLOSE_TOP\n"
                                 )
@@ -709,24 +1082,6 @@ fun R2Screen(
 // ==================================================
 // HOLO LIGHTS
 // ==================================================
-
-            val holoLightsEnabled = remember {
-                mutableStateOf(true)
-            }
-            val frontHoloOn =
-                remember {
-                    mutableStateOf(true)
-                }
-
-            val topHoloOn =
-                remember {
-                    mutableStateOf(true)
-                }
-
-            val rearHoloOn =
-                remember {
-                    mutableStateOf(true)
-                }
 
             Card(
 
@@ -1153,35 +1508,6 @@ fun R2Screen(
                     Spacer(
                         modifier = Modifier.height(18.dp)
                     )
-
-                    // ==========================================
-                    // CENTER HPs
-//                    // ==========================================
-//
-//                    Button(
-//
-//                        modifier =
-//                            Modifier.fillMaxWidth(),
-//
-//                        enabled =
-//                            bluetoothController.isConnected,
-//
-//                        colors =
-//                            ButtonDefaults.buttonColors(
-//                                containerColor =
-//                                    Color(0xFF00ACC1)
-//                            ),
-//
-//                        onClick = {
-//
-//                            bluetoothController.send(
-//                                "CENTER_HOLOS\n"
-//                            )
-//                        }
-//                    ) {
-//
-//                        Text("CENTER HOLOS")
-//                    }
                 }
             }
 
