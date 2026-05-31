@@ -1,0 +1,1358 @@
+package com.example.r2d2controlpanels
+
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import kotlin.math.sqrt
+
+@Composable
+fun R2Screen(
+    bluetoothController: BluetoothController
+) {
+
+    // ==================================================
+    // JOYSTICK
+    // ==================================================
+
+    val knobX = remember {
+        mutableFloatStateOf(0f)
+    }
+
+    val knobY = remember {
+        mutableFloatStateOf(0f)
+    }
+
+    val pan = remember {
+        mutableFloatStateOf(90f)
+    }
+
+    val tilt = remember {
+        mutableFloatStateOf(90f)
+    }
+
+    // ==================================================
+    // RLD MESSAGE
+    // ==================================================
+
+    val rearLogicMessage = remember {
+        mutableStateOf("")
+    }
+
+    // ==================================================
+    // SEND HOLO
+    // ==================================================
+
+    fun sendHolo() {
+
+        bluetoothController.send(
+            "HOLO:${pan.floatValue.toInt()},${tilt.floatValue.toInt()}\n"
+        )
+    }
+
+    // ==================================================
+    // ROOT
+    // ==================================================
+
+    Box(
+
+        modifier = Modifier
+            .fillMaxSize()
+
+            .background(
+
+                Brush.verticalGradient(
+
+                    colors = listOf(
+
+                        Color(0xFF010409),
+
+                        Color(0xFF07111F),
+
+                        Color(0xFF0A1B2D),
+
+                        Color(0xFF000000)
+                    )
+                )
+            )
+    ) {
+
+        val scrollState =
+            rememberScrollState()
+
+        Column(
+
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(scrollState)
+                .navigationBarsPadding()
+                .imePadding()
+                .padding(20.dp),
+
+            horizontalAlignment =
+                Alignment.CenterHorizontally
+        ) {
+
+            // ==================================================
+            // TITLE
+            // ==================================================
+
+            Text(
+
+                text = "R2 ASTROMECH CONTROL",
+
+                color = Color(0xFF64C8FF),
+
+                fontSize = 30.sp,
+
+                fontWeight = FontWeight.Bold
+            )
+
+            Spacer(
+                modifier = Modifier.height(8.dp)
+            )
+
+            Text(
+
+                text = "DOME OPERATIONS INTERFACE",
+
+                color = Color.LightGray,
+
+                fontSize = 14.sp
+            )
+
+            Spacer(
+                modifier = Modifier.height(28.dp)
+            )
+
+            // ==================================================
+            // CONNECTION STATUS
+            // ==================================================
+
+            Card(
+
+                modifier =
+                    Modifier.fillMaxWidth(),
+
+                colors =
+                    CardDefaults.cardColors(
+
+                        containerColor =
+                            Color(0xFF101923)
+                    ),
+
+                border =
+                    BorderStroke(
+                        1.dp,
+                        Color(0xFF284866)
+                    ),
+
+                shape =
+                    RoundedCornerShape(20.dp)
+            ) {
+
+                Row(
+
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(18.dp),
+
+                    verticalAlignment =
+                        Alignment.CenterVertically
+                ) {
+
+                    val statusColor =
+                        when (
+                            bluetoothController.connectionState
+                        ) {
+
+                            BluetoothState.CONNECTED ->
+                                Color(0xFF00FF99)
+
+                            BluetoothState.CONNECTING ->
+                                Color(0xFFFFD54F)
+
+                            BluetoothState.DISCONNECTED ->
+                                Color(0xFFFF5252)
+                        }
+
+                    val statusText =
+                        when (
+                            bluetoothController.connectionState
+                        ) {
+
+                            BluetoothState.CONNECTED ->
+                                "R2 LINK ESTABLISHED"
+
+                            BluetoothState.CONNECTING ->
+                                "CONNECTING TO DOME..."
+
+                            BluetoothState.DISCONNECTED ->
+                                "DOME OFFLINE"
+                        }
+
+                    Canvas(
+                        modifier = Modifier.size(18.dp)
+                    ) {
+
+                        drawCircle(
+                            color = statusColor
+                        )
+                    }
+
+                    Spacer(
+                        modifier = Modifier.width(12.dp)
+                    )
+
+                    Text(
+
+                        text = statusText,
+
+                        color = Color.White,
+
+                        fontSize = 16.sp
+                    )
+                }
+            }
+
+            Spacer(
+                modifier = Modifier.height(28.dp)
+            )
+
+            // ==================================================
+            // JOYSTICK
+            // ==================================================
+
+            Card(
+
+                shape =
+                    RoundedCornerShape(28.dp),
+
+                colors =
+                    CardDefaults.cardColors(
+
+                        containerColor =
+                            Color(0xFF0E1724)
+                    ),
+
+                border =
+                    BorderStroke(
+                        1.dp,
+                        Color(0xFF2A5E8A)
+                    )
+            ) {
+
+                Column(
+
+                    modifier =
+                        Modifier.padding(24.dp),
+
+                    horizontalAlignment =
+                        Alignment.CenterHorizontally
+                ) {
+
+                    Text(
+
+                        text = "HOLOPROJECTOR CONTROL",
+
+                        color = Color(0xFF64C8FF),
+
+                        fontSize = 18.sp,
+
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Spacer(
+                        modifier = Modifier.height(24.dp)
+                    )
+
+                    Canvas(
+
+                        modifier = Modifier
+
+                            .size(240.dp)
+
+                            .border(
+
+                                width = 2.dp,
+
+                                color = Color(0xFF4DA3FF),
+
+                                shape = CircleShape
+                            )
+
+                            .pointerInput(Unit) {
+
+                                detectDragGestures(
+
+                                    onDragEnd = {
+
+                                        knobX.floatValue = 0f
+                                        knobY.floatValue = 0f
+
+                                        pan.floatValue = 90f
+                                        tilt.floatValue = 90f
+
+                                        sendHolo()
+                                    }
+
+                                ) { change, dragAmount ->
+
+                                    change.consume()
+
+                                    val maxRadius = 100f
+
+                                    val newX =
+                                        knobX.floatValue +
+                                                dragAmount.x
+
+                                    val newY =
+                                        knobY.floatValue +
+                                                dragAmount.y
+
+                                    val distance =
+                                        sqrt(
+                                            newX * newX +
+                                                    newY * newY
+                                        )
+
+                                    if (distance <= maxRadius) {
+
+                                        knobX.floatValue = newX
+                                        knobY.floatValue = newY
+
+                                        // FIXED DIRECTION
+
+                                        pan.floatValue =
+                                            ((-newX / maxRadius) * 90f + 90f)
+                                                .coerceIn(0f, 180f)
+
+                                        tilt.floatValue =
+                                            ((-newY / maxRadius) * 90f + 90f)
+                                                .coerceIn(0f, 180f)
+
+                                        sendHolo()
+                                    }
+                                }
+                            }
+
+                    ) {
+
+                        val center =
+                            Offset(
+                                size.width / 2,
+                                size.height / 2
+                            )
+
+                        // ==================================================
+                        // OUTER
+                        // ==================================================
+
+                        drawCircle(
+                            color = Color(0xFF13263D),
+                            radius = size.width / 2
+                        )
+
+                        drawCircle(
+
+                            color = Color(0xFF2A7FFF),
+
+                            radius = size.width / 2,
+
+                            style = Stroke(
+                                width = 6f
+                            )
+                        )
+
+                        // ==================================================
+                        // CROSSHAIR
+                        // ==================================================
+
+                        drawLine(
+
+                            color = Color(0x552A7FFF),
+
+                            start =
+                                Offset(center.x, 0f),
+
+                            end =
+                                Offset(center.x, size.height),
+
+                            strokeWidth = 3f
+                        )
+
+                        drawLine(
+
+                            color = Color(0x552A7FFF),
+
+                            start =
+                                Offset(0f, center.y),
+
+                            end =
+                                Offset(size.width, center.y),
+
+                            strokeWidth = 3f
+                        )
+
+                        // ==================================================
+                        // KNOB
+                        // ==================================================
+
+                        drawCircle(
+
+                            color = Color(0xFF64C8FF),
+
+                            radius = 42f,
+
+                            center = Offset(
+
+                                center.x +
+                                        knobX.floatValue,
+
+                                center.y +
+                                        knobY.floatValue
+                            )
+                        )
+
+                        drawCircle(
+
+                            color = Color.White,
+
+                            radius = 14f,
+
+                            center = Offset(
+
+                                center.x +
+                                        knobX.floatValue,
+
+                                center.y +
+                                        knobY.floatValue
+                            )
+                        )
+                    }
+
+                    Spacer(
+                        modifier = Modifier.height(22.dp)
+                    )
+
+                    HorizontalDivider(
+                        color = Color(0xFF284866)
+                    )
+
+                    Spacer(
+                        modifier = Modifier.height(20.dp)
+                    )
+
+                    Row(
+
+                        horizontalArrangement =
+                            Arrangement.SpaceEvenly,
+
+                        modifier =
+                            Modifier.fillMaxWidth()
+                    ) {
+
+                        Column(
+
+                            horizontalAlignment =
+                                Alignment.CenterHorizontally
+                        ) {
+
+                            Text(
+                                text = "PAN",
+                                color = Color.Gray
+                            )
+
+                            Spacer(
+                                modifier = Modifier.height(6.dp)
+                            )
+
+                            Text(
+
+                                text =
+                                    pan.floatValue.toInt().toString(),
+
+                                color = Color.White,
+
+                                fontSize = 28.sp,
+
+                                fontWeight =
+                                    FontWeight.Bold
+                            )
+                        }
+
+                        Column(
+
+                            horizontalAlignment =
+                                Alignment.CenterHorizontally
+                        ) {
+
+                            Text(
+                                text = "TILT",
+                                color = Color.Gray
+                            )
+
+                            Spacer(
+                                modifier = Modifier.height(6.dp)
+                            )
+
+                            Text(
+
+                                text =
+                                    tilt.floatValue.toInt().toString(),
+
+                                color = Color.White,
+
+                                fontSize = 28.sp,
+
+                                fontWeight =
+                                    FontWeight.Bold
+                            )
+                        }
+                    }
+                }
+            }
+
+            Spacer(
+                modifier = Modifier.height(28.dp)
+            )
+
+            // ==================================================
+            // PANEL CONTROLS
+            // ==================================================
+
+            Card(
+
+                modifier =
+                    Modifier.fillMaxWidth(),
+
+                shape =
+                    RoundedCornerShape(20.dp),
+
+                colors =
+                    CardDefaults.cardColors(
+
+                        containerColor =
+                            Color(0xFF101923)
+                    ),
+
+                border =
+                    BorderStroke(
+                        1.dp,
+                        Color(0xFF284866)
+                    )
+            ) {
+
+                Column(
+                    modifier =
+                        Modifier.padding(20.dp)
+                ) {
+
+                    Text(
+
+                        text = "PIE PANEL SYSTEM",
+
+                        color = Color(0xFF64C8FF),
+
+                        fontSize = 18.sp,
+
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Spacer(
+                        modifier = Modifier.height(20.dp)
+                    )
+
+                    Row(
+
+                        horizontalArrangement =
+                            Arrangement.SpaceEvenly,
+
+                        modifier =
+                            Modifier.fillMaxWidth()
+                    ) {
+
+                        repeat(4) {
+
+                            Canvas(
+                                modifier =
+                                    Modifier.size(26.dp)
+                            ) {
+
+                                drawCircle(
+
+                                    color =
+                                        if (
+                                            bluetoothController.isConnected
+                                        )
+                                            Color(0xFF00E5FF)
+                                        else
+                                            Color.DarkGray
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(
+                        modifier = Modifier.height(22.dp)
+                    )
+
+                    Row(
+
+                        horizontalArrangement =
+                            Arrangement.spacedBy(16.dp),
+
+                        modifier =
+                            Modifier.fillMaxWidth()
+                    ) {
+
+                        Button(
+
+                            modifier =
+                                Modifier.weight(1f),
+
+                            enabled =
+                                bluetoothController.isConnected,
+
+                            colors =
+                                ButtonDefaults.buttonColors(
+                                    containerColor =
+                                        Color(0xFF1976D2)
+                                ),
+
+                            onClick = {
+
+                                bluetoothController.send(
+                                    "OPEN_TOP\n"
+                                )
+                            }
+                        ) {
+
+                            Text("OPEN")
+                        }
+
+                        Button(
+
+                            modifier =
+                                Modifier.weight(1f),
+
+                            enabled =
+                                bluetoothController.isConnected,
+
+                            colors =
+                                ButtonDefaults.buttonColors(
+                                    containerColor =
+                                        Color(0xFF455A64)
+                                ),
+
+                            onClick = {
+
+                                bluetoothController.send(
+                                    "CLOSE_TOP\n"
+                                )
+                            }
+                        ) {
+
+                            Text("CLOSE")
+                        }
+                    }
+                }
+            }
+
+            Spacer(
+                modifier = Modifier.height(28.dp)
+            )
+
+// ==================================================
+// HOLO LIGHTS
+// ==================================================
+
+            val holoLightsEnabled = remember {
+                mutableStateOf(true)
+            }
+            val frontHoloOn =
+                remember {
+                    mutableStateOf(true)
+                }
+
+            val topHoloOn =
+                remember {
+                    mutableStateOf(true)
+                }
+
+            val rearHoloOn =
+                remember {
+                    mutableStateOf(true)
+                }
+
+            Card(
+
+                modifier =
+                    Modifier.fillMaxWidth(),
+
+                colors =
+                    CardDefaults.cardColors(
+                        containerColor =
+                            Color(0xFF101923)
+                    ),
+
+                border =
+                    BorderStroke(
+                        1.dp,
+                        Color(0xFF284866)
+                    ),
+
+                shape =
+                    RoundedCornerShape(20.dp)
+            ) {
+
+                Column(
+                    modifier =
+                        Modifier.padding(20.dp)
+                ) {
+
+                    Text(
+
+                        text = "ASTROPIXEL HOLO SYSTEM",
+
+                        color = Color(0xFF64C8FF),
+
+                        fontSize = 18.sp,
+
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Spacer(
+                        modifier = Modifier.height(20.dp)
+                    )
+
+// ==========================================
+// FRONT / TOP / REAR TOGGLE SWITCHES
+// ==========================================
+
+                    Column(
+
+                        verticalArrangement =
+                            Arrangement.spacedBy(16.dp),
+
+                        modifier =
+                            Modifier.fillMaxWidth()
+                    ) {
+
+                        // ======================================
+                        // FRONT HOLO
+                        // ======================================
+
+                        Row(
+
+                            modifier =
+                                Modifier.fillMaxWidth(),
+
+                            horizontalArrangement =
+                                Arrangement.SpaceBetween,
+
+                            verticalAlignment =
+                                Alignment.CenterVertically
+                        ) {
+
+                            Text(
+
+                                text = "FRONT HOLO",
+
+                                color = Color.White,
+
+                                fontSize = 16.sp,
+
+                                fontWeight = FontWeight.Bold
+                            )
+
+                            Switch(
+
+                                checked =
+                                    frontHoloOn.value,
+
+                                enabled =
+                                    bluetoothController.isConnected,
+
+                                onCheckedChange = { enabled ->
+
+                                    frontHoloOn.value =
+                                        enabled
+
+                                    if (enabled) {
+
+                                        bluetoothController.send(
+                                            "FRONT_HOLO\n"
+                                        )
+
+                                    } else {
+
+                                        bluetoothController.send(
+                                            "FRONT_HOLO_OFF\n"
+                                        )
+                                    }
+                                }
+                            )
+                        }
+
+                        // ======================================
+                        // TOP HOLO
+                        // ======================================
+
+                        Row(
+
+                            modifier =
+                                Modifier.fillMaxWidth(),
+
+                            horizontalArrangement =
+                                Arrangement.SpaceBetween,
+
+                            verticalAlignment =
+                                Alignment.CenterVertically
+                        ) {
+
+                            Text(
+
+                                text = "TOP HOLO",
+
+                                color = Color.White,
+
+                                fontSize = 16.sp,
+
+                                fontWeight = FontWeight.Bold
+                            )
+
+                            Switch(
+
+                                checked =
+                                    topHoloOn.value,
+
+                                enabled =
+                                    bluetoothController.isConnected,
+
+                                onCheckedChange = { enabled ->
+
+                                    topHoloOn.value =
+                                        enabled
+
+                                    if (enabled) {
+
+                                        bluetoothController.send(
+                                            "TOP_HOLO\n"
+                                        )
+
+                                    } else {
+
+                                        bluetoothController.send(
+                                            "TOP_HOLO_OFF\n"
+                                        )
+                                    }
+                                }
+                            )
+                        }
+
+                        // ======================================
+                        // REAR HOLO
+                        // ======================================
+
+                        Row(
+
+                            modifier =
+                                Modifier.fillMaxWidth(),
+
+                            horizontalArrangement =
+                                Arrangement.SpaceBetween,
+
+                            verticalAlignment =
+                                Alignment.CenterVertically
+                        ) {
+
+                            Text(
+
+                                text = "REAR HOLO",
+
+                                color = Color.White,
+
+                                fontSize = 16.sp,
+
+                                fontWeight = FontWeight.Bold
+                            )
+
+                            Switch(
+
+                                checked =
+                                    rearHoloOn.value,
+
+                                enabled =
+                                    bluetoothController.isConnected,
+
+                                onCheckedChange = { enabled ->
+
+                                    rearHoloOn.value =
+                                        enabled
+
+                                    if (enabled) {
+
+                                        bluetoothController.send(
+                                            "REAR_HOLO\n"
+                                        )
+
+                                    } else {
+
+                                        bluetoothController.send(
+                                            "REAR_HOLO_OFF\n"
+                                        )
+                                    }
+                                }
+                            )
+                        }
+                    }
+
+
+                    Spacer(
+                        modifier = Modifier.height(18.dp)
+                    )
+
+                    // ==========================================
+                    // ON / OFF
+                    // ==========================================
+
+                    Button(
+
+                        modifier =
+                            Modifier.fillMaxWidth(),
+
+                        enabled =
+                            bluetoothController.isConnected,
+
+                        colors =
+                            ButtonDefaults.buttonColors(
+
+                                containerColor =
+
+                                    if (holoLightsEnabled.value)
+                                        Color(0xFFD32F2F)
+                                    else
+                                        Color(0xFF00C853)
+                            ),
+
+                        onClick = {
+
+                            holoLightsEnabled.value =
+                                !holoLightsEnabled.value
+                            topHoloOn.value = holoLightsEnabled.value
+                            frontHoloOn.value = holoLightsEnabled.value
+                            rearHoloOn.value = holoLightsEnabled.value
+
+
+                            if (holoLightsEnabled.value) {
+
+                                bluetoothController.send(
+                                    "HOLO_LIGHTS_ON\n"
+                                )
+
+                            } else {
+
+                                bluetoothController.send(
+                                    "HOLO_LIGHTS_OFF\n"
+                                )
+                            }
+                        }
+                    ) {
+
+                        Text(
+
+                            text =
+
+                                if (holoLightsEnabled.value)
+                                    "TURN HOLOS OFF"
+                                else
+                                    "TURN HOLOS ON"
+                        )
+                    }
+
+                    Spacer(
+                        modifier = Modifier.height(18.dp)
+                    )
+
+                    // ==========================================
+                    // LEIA / RAINBOW
+                    // ==========================================
+
+                    Row(
+
+                        horizontalArrangement =
+                            Arrangement.spacedBy(12.dp),
+
+                        modifier =
+                            Modifier.fillMaxWidth()
+                    ) {
+
+                        Button(
+
+                            modifier =
+                                Modifier.weight(1f),
+
+                            enabled =
+                                bluetoothController.isConnected,
+
+                            colors =
+                                ButtonDefaults.buttonColors(
+                                    containerColor =
+                                        Color(0xFF5E35B1)
+                                ),
+
+                            onClick = {
+
+                                bluetoothController.send(
+                                    "LEIA_MODE\n"
+                                )
+                            }
+                        ) {
+
+                            Text("LEIA")
+                        }
+
+                        Button(
+
+                            modifier =
+                                Modifier.weight(1f),
+
+                            enabled =
+                                bluetoothController.isConnected,
+
+                            colors =
+                                ButtonDefaults.buttonColors(
+                                    containerColor =
+                                        Color(0xFF8E24AA)
+                                ),
+
+                            onClick = {
+
+                                bluetoothController.send(
+                                    "RAINBOW_MODE\n"
+                                )
+                            }
+                        ) {
+
+                            Text("RAINBOW")
+                        }
+                    }
+
+                    Spacer(
+                        modifier = Modifier.height(18.dp)
+                    )
+
+                    // ==========================================
+                    // TWITCH
+                    // ==========================================
+
+                    Row(
+
+                        horizontalArrangement =
+                            Arrangement.spacedBy(12.dp),
+
+                        modifier =
+                            Modifier.fillMaxWidth()
+                    ) {
+
+                        Button(
+
+                            modifier =
+                                Modifier.weight(1f),
+
+                            enabled =
+                                bluetoothController.isConnected,
+
+                            colors =
+                                ButtonDefaults.buttonColors(
+                                    containerColor =
+                                        Color(0xFF00897B)
+                                ),
+
+                            onClick = {
+
+                                bluetoothController.send(
+                                    "TWITCH_ON\n"
+                                )
+                            }
+                        ) {
+
+                            Text("TWITCH ON")
+                        }
+
+                        Button(
+
+                            modifier =
+                                Modifier.weight(1f),
+
+                            enabled =
+                                bluetoothController.isConnected,
+
+                            colors =
+                                ButtonDefaults.buttonColors(
+                                    containerColor =
+                                        Color(0xFF455A64)
+                                ),
+
+                            onClick = {
+
+                                bluetoothController.send(
+                                    "TWITCH_OFF\n"
+                                )
+                            }
+                        ) {
+
+                            Text("TWITCH OFF")
+                        }
+                    }
+
+                    Spacer(
+                        modifier = Modifier.height(18.dp)
+                    )
+
+                    // ==========================================
+                    // CENTER HPs
+//                    // ==========================================
+//
+//                    Button(
+//
+//                        modifier =
+//                            Modifier.fillMaxWidth(),
+//
+//                        enabled =
+//                            bluetoothController.isConnected,
+//
+//                        colors =
+//                            ButtonDefaults.buttonColors(
+//                                containerColor =
+//                                    Color(0xFF00ACC1)
+//                            ),
+//
+//                        onClick = {
+//
+//                            bluetoothController.send(
+//                                "CENTER_HOLOS\n"
+//                            )
+//                        }
+//                    ) {
+//
+//                        Text("CENTER HOLOS")
+//                    }
+                }
+            }
+
+            // ==================================================
+            // REAR LOGIC DISPLAY
+            // ==================================================
+
+            Card(
+
+                modifier =
+                    Modifier.fillMaxWidth(),
+
+                shape =
+                    RoundedCornerShape(20.dp),
+
+                colors =
+                    CardDefaults.cardColors(
+                        containerColor =
+                            Color(0xFF101923)
+                    ),
+
+                border =
+                    BorderStroke(
+                        1.dp,
+                        Color(0xFF284866)
+                    )
+            ) {
+
+                Column(
+                    modifier =
+                        Modifier.padding(20.dp)
+                ) {
+
+                    Text(
+
+                        text = "REAR LOGIC DISPLAY",
+
+                        color = Color(0xFF64C8FF),
+
+                        fontSize = 18.sp,
+
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Spacer(
+                        modifier = Modifier.height(16.dp)
+                    )
+
+                    OutlinedTextField(
+
+                        value =
+                            rearLogicMessage.value,
+
+                        onValueChange = {
+
+                            rearLogicMessage.value = it
+                        },
+
+                        modifier =
+                            Modifier.fillMaxWidth(),
+
+                        label = {
+
+                            Text(
+                                "Display Message"
+                            )
+                        },
+
+                        keyboardOptions =
+                            KeyboardOptions(
+                                capitalization =
+                                    KeyboardCapitalization.Characters
+                            ),
+
+                        colors =
+                            TextFieldDefaults.colors(
+
+                                focusedContainerColor =
+                                    Color(0xFF0E1724),
+
+                                unfocusedContainerColor =
+                                    Color(0xFF0E1724),
+
+                                focusedTextColor =
+                                    Color.White,
+
+                                unfocusedTextColor =
+                                    Color.White
+                            )
+                    )
+
+                    Spacer(
+                        modifier = Modifier.height(18.dp)
+                    )
+
+                    Button(
+
+                        modifier =
+                            Modifier.fillMaxWidth(),
+
+                        enabled =
+                            bluetoothController.isConnected,
+
+                        colors =
+                            ButtonDefaults.buttonColors(
+                                containerColor =
+                                    Color(0xFF00ACC1)
+                            ),
+
+                        onClick = {
+
+                            bluetoothController.send(
+                                "RLD:${rearLogicMessage.value}\n"
+                            )
+                        }
+                    ) {
+
+                        Text(
+                            "SEND TO RLD"
+                        )
+                    }
+                }
+            }
+
+            Spacer(
+                modifier = Modifier.height(28.dp)
+            )
+
+            // ==================================================
+            // TEST
+            // ==================================================
+
+            Button(
+
+                enabled =
+                    bluetoothController.isConnected,
+
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(62.dp),
+
+                shape =
+                    RoundedCornerShape(18.dp),
+
+                colors =
+                    ButtonDefaults.buttonColors(
+                        containerColor =
+                            Color(0xFF00ACC1)
+                    ),
+
+                onClick = {
+
+                    bluetoothController.send(
+                        "TEST\n"
+                    )
+                }
+            ) {
+
+                Text(
+
+                    text = "RUN FULL DIAGNOSTICS",
+
+                    fontSize = 18.sp,
+
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Spacer(
+                modifier = Modifier.height(40.dp)
+            )
+        }
+    }
+}

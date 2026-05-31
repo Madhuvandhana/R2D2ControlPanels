@@ -1,0 +1,952 @@
+/* CSS Styling for R2-D2 ESP32 Controller Demo */
+:root {
+    --bg-dark: #070913;
+    --card-bg: rgba(13, 20, 38, 0.65);
+    --border-color: rgba(43, 76, 133, 0.4);
+    --glow-color: rgba(0, 170, 255, 0.4);
+    --primary-blue: #0088ff;
+    --primary-glow: #00d2ff;
+    --text-color: #e2f0fd;
+    --text-muted: #8fa0c0;
+    --font-cyber: 'Share Tech Mono', monospace;
+    --font-display: 'Orbitron', sans-serif;
+    --font-body: 'Inter', sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--text-color);
+    font-family: var(--font-body);
+    overflow-x: hidden;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Space Background Layering */
+.stars-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 40px),
+        radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 30px),
+        radial-gradient(white, rgba(255,255,255,.1) 2px, transparent 40px);
+    background-size: 550px 550px, 350px 350px, 250px 250px;
+    background-position: 0 0, 40px 60px, 130px 270px;
+    opacity: 0.35;
+    z-index: -2;
+    animation: backgroundMove 180s linear infinite;
+}
+
+.nebula-bg {
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at 30% 20%, rgba(13, 37, 94, 0.3) 0%, transparent 40%),
+                radial-gradient(circle at 80% 70%, rgba(94, 13, 83, 0.15) 0%, transparent 35%);
+    filter: blur(80px);
+    z-index: -1;
+}
+
+@keyframes backgroundMove {
+    from { background-position: 0 0, 40px 60px, 130px 270px; }
+    to { background-position: 1000px 500px, 1040px 560px, 1130px 770px; }
+}
+
+/* Header */
+.app-header {
+    background: rgba(8, 12, 28, 0.85);
+    border-bottom: 1px solid var(--border-color);
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    backdrop-filter: blur(10px);
+}
+
+.logo-area {
+    display: flex;
+    flex-direction: column;
+}
+
+.starwars-font {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: 1.5rem;
+    letter-spacing: 3px;
+    background: linear-gradient(to right, #ffe81f, #ffd000);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 10px rgba(255, 232, 31, 0.2);
+}
+
+.subtitle {
+    font-family: var(--font-cyber);
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+    margin-top: 2px;
+}
+
+.top-controls {
+    display: flex;
+    gap: 1rem;
+}
+
+/* Buttons Styling */
+.glow-btn {
+    background: rgba(0, 136, 255, 0.15);
+    border: 1px solid var(--primary-blue);
+    color: var(--text-color);
+    padding: 0.6rem 1.2rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 0 10px rgba(0, 136, 255, 0.1);
+}
+
+.glow-btn:hover {
+    background: rgba(0, 136, 255, 0.3);
+    box-shadow: 0 0 15px var(--glow-color);
+    transform: translateY(-2px);
+}
+
+.glow-btn.highlight {
+    background: rgba(255, 232, 31, 0.15);
+    border-color: #ffe81f;
+    color: #ffe81f;
+    box-shadow: 0 0 10px rgba(255, 232, 31, 0.15);
+}
+
+.glow-btn.highlight:hover {
+    background: rgba(255, 232, 31, 0.35);
+    box-shadow: 0 0 15px rgba(255, 232, 31, 0.4);
+}
+
+.glow-btn.small {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.75rem;
+}
+
+/* Dashboard Grid Layout */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: 2rem;
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    flex-grow: 1;
+    align-items: start;
+}
+
+/* LEFT SIDE: Android Smartphone Mockup */
+.phone-mockup-wrapper {
+    display: flex;
+    justify-content: center;
+}
+
+.phone-frame {
+    width: 360px;
+    height: 720px;
+    background: #0d0f1a;
+    border: 12px solid #222538;
+    border-radius: 40px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7),
+                0 0 30px rgba(0, 136, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.phone-camera-notch {
+    width: 140px;
+    height: 25px;
+    background: #222538;
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    border-bottom-left-radius: 18px;
+    border-bottom-right-radius: 18px;
+    z-index: 10;
+}
+
+.phone-screen {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    background: #0f1424;
+    position: relative;
+    padding-top: 25px;
+}
+
+/* Android Status Bar */
+.android-status-bar {
+    height: 22px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 1rem;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-family: var(--font-body);
+}
+
+.android-status-bar .bluetooth-icon.active {
+    color: var(--primary-glow);
+    text-shadow: 0 0 5px var(--primary-blue);
+    font-weight: 600;
+}
+
+/* App Nav */
+.app-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background: #151c33;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.app-title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+    color: var(--text-color);
+}
+
+.connection-pill {
+    font-size: 0.65rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 20px;
+    font-weight: 700;
+}
+
+.connection-pill.connected {
+    background: rgba(0, 255, 102, 0.15);
+    color: #00ff66;
+    border: 1px solid #00ff66;
+}
+
+.connection-pill.disconnected {
+    background: rgba(255, 0, 34, 0.15);
+    color: #ff0022;
+    border: 1px solid #ff0022;
+}
+
+/* App Scrollable Content */
+.app-content {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 0.8rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+/* Cards inside App */
+.card {
+    background: rgba(26, 34, 58, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 0.9rem;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.card-header h3 {
+    font-size: 0.85rem;
+    font-family: var(--font-display);
+    letter-spacing: 0.5px;
+    color: var(--text-color);
+}
+
+.device-name, .badge {
+    font-size: 0.7rem;
+    font-family: var(--font-cyber);
+    color: var(--text-muted);
+}
+
+.badge {
+    background: rgba(0, 136, 255, 0.1);
+    color: var(--primary-glow);
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+}
+
+/* UI Elements: Buttons & Inputs */
+.app-btn {
+    width: 100%;
+    background: var(--primary-blue);
+    border: none;
+    color: white;
+    padding: 0.6rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: background 0.2s;
+}
+
+.app-btn:hover {
+    background: #0077e6;
+}
+
+.app-btn.connected-btn {
+    background: rgba(255, 0, 34, 0.1);
+    border: 1px solid #ff0022;
+    color: #ff0022;
+}
+
+.app-btn.connected-btn:hover {
+    background: rgba(255, 0, 34, 0.2);
+}
+
+.app-btn.outline {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+}
+
+.app-btn.outline:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.app-btn.active-glowing {
+    background: rgba(0, 210, 255, 0.2);
+    border: 1px solid var(--primary-glow);
+    color: var(--primary-glow);
+    box-shadow: 0 0 10px rgba(0, 210, 255, 0.25);
+}
+
+/* LED preset picker */
+.color-options-grid {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.color-preset-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    background-color: var(--btn-color);
+    cursor: pointer;
+    transition: transform 0.2s, border-color 0.2s;
+}
+
+.color-preset-btn:hover {
+    transform: scale(1.1);
+}
+
+.color-preset-btn.active {
+    border-color: white;
+    transform: scale(1.15);
+    box-shadow: 0 0 10px var(--btn-color);
+}
+
+.color-picker-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 0.65rem;
+    color: var(--text-muted);
+}
+
+#custom-color-picker {
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    background: transparent;
+}
+
+/* Joystick Layout */
+.joystick-control-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.joystick-ring {
+    width: 130px;
+    height: 130px;
+    background: #111524;
+    border: 2px solid var(--border-color);
+    border-radius: 50%;
+    position: relative;
+    box-shadow: inset 0 0 15px rgba(0,0,0,0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.joystick-knob {
+    width: 50px;
+    height: 50px;
+    background: radial-gradient(circle at 35% 35%, #506594 0%, #1e2842 100%);
+    border: 2px solid #5a73a8;
+    border-radius: 50%;
+    cursor: grab;
+    position: absolute;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    transition: transform 0.1s ease-out;
+}
+
+.joystick-knob:active {
+    cursor: grabbing;
+}
+
+.joy-dir {
+    position: absolute;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.25);
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: color 0.1s;
+}
+
+.joy-dir:hover {
+    color: var(--primary-glow);
+}
+
+.joy-dir.up { top: 6px; }
+.joy-dir.right { right: 8px; }
+.joy-dir.down { bottom: 6px; }
+.joy-dir.left { left: 8px; }
+
+.holo-actions {
+    display: flex;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+/* Pie panel toggle switch styling */
+.switches-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.switch-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.switch-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 42px;
+    height: 22px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #1e2842;
+    transition: .3s;
+    border-radius: 34px;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 2px;
+    bottom: 2px;
+    background-color: #8fa0c0;
+    transition: .3s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: var(--primary-blue);
+}
+
+input:checked + .slider:before {
+    transform: translateX(20px);
+    background-color: white;
+}
+
+/* Input group */
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    margin-bottom: 0.8rem;
+}
+
+.input-group:last-child {
+    margin-bottom: 0;
+}
+
+.input-group label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.input-group input {
+    background: #111524;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 0.5rem;
+    color: var(--text-color);
+    font-family: var(--font-cyber);
+    font-size: 0.85rem;
+}
+
+.input-group input:focus {
+    outline: none;
+    border-color: var(--primary-blue);
+}
+
+/* RIGHT SIDE: R2-D2 SIMULATOR & MONITOR */
+.simulator-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.r2d2-sim-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 1.5rem;
+    position: relative;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.glow-rim {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    border-radius: 16px;
+    border: 1px solid transparent;
+    background: linear-gradient(135deg, var(--primary-blue), transparent 40%) border-box;
+    -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: destination-out;
+    mask-composite: exclude;
+    pointer-events: none;
+    opacity: 0.5;
+}
+
+.card-title {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    letter-spacing: 2px;
+    margin-bottom: 1.2rem;
+    align-self: flex-start;
+    color: var(--primary-glow);
+    text-shadow: 0 0 10px rgba(0, 210, 255, 0.3);
+}
+
+.terminal-prompt {
+    color: #ffcc00;
+}
+
+.r2d2-viewport {
+    width: 100%;
+    max-width: 440px;
+    background: radial-gradient(circle at 50% 50%, #151d38 0%, #080c18 100%);
+    border: 2px solid rgba(43, 76, 133, 0.6);
+    border-radius: 12px;
+    padding: 1rem;
+    position: relative;
+    box-shadow: inset 0 0 30px rgba(0,0,0,0.9);
+}
+
+#r2d2-svg {
+    width: 100%;
+    height: auto;
+    filter: drop-shadow(0 0 10px rgba(0, 136, 255, 0.15));
+}
+
+/* SVG Panel flap rotations */
+.panel-flap {
+    transform-origin: center;
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), filter 0.3s;
+}
+
+.panel-open #pie-panel-top1 {
+    transform: translate(-10px, -20px) rotate(-15deg);
+    fill: #7d8b9c;
+}
+.panel-open #pie-panel-top2 {
+    transform: translate(10px, -20px) rotate(15deg);
+    fill: #7d8b9c;
+}
+.panel-open #pie-panel-rear1 {
+    transform: translate(0px, -25px) scaleY(0.7);
+    fill: #7d8b9c;
+}
+
+/* Matrix Displays Inside R2-D2 SVG */
+.matrix-text {
+    font-family: var(--font-cyber);
+    font-weight: bold;
+    color: #52ecff;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-align: center;
+    line-height: 20px;
+    text-shadow: 0 0 5px #00a2ff, 0 0 10px #0055ff;
+    animation: matrixScan 2s infinite linear;
+}
+
+@keyframes matrixScan {
+    0% { opacity: 0.9; }
+    50% { opacity: 0.65; }
+    100% { opacity: 0.9; }
+}
+
+.rear-logic-monitor {
+    margin-top: 1rem;
+    background: rgba(5, 8, 20, 0.7);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 6px;
+    padding: 0.6rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.rear-logic-monitor .label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.rear-matrix {
+    font-family: var(--font-cyber);
+    background: #11051a;
+    border: 1px solid #8e00d9;
+    color: #df4dff;
+    padding: 0.2rem 0.6rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    border-radius: 4px;
+    letter-spacing: 1px;
+    text-shadow: 0 0 5px #a600ff;
+}
+
+/* ESP32 Logging Panel */
+.esp32-console-card {
+    background: #060914;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 0.8rem;
+    font-family: var(--font-cyber);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+}
+
+.console-header {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.console-header .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+.console-header .dot.red { background: #ff4a4a; }
+.console-header .dot.yellow { background: #ffb84a; }
+.console-header .dot.green { background: #4aff4a; }
+
+.terminal-title {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin-left: 0.5rem;
+}
+
+.console-body {
+    height: 120px;
+    overflow-y: auto;
+    font-size: 0.75rem;
+    line-height: 1.4;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding-right: 0.5rem;
+}
+
+.console-body::-webkit-scrollbar {
+    width: 4px;
+}
+.console-body::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 2px;
+}
+
+.console-body .line {
+    white-space: pre-wrap;
+    font-family: var(--font-cyber);
+}
+
+.console-body .line.green { color: #00ff66; }
+.console-body .line.yellow { color: #ffd800; }
+.console-body .line.blue { color: #00aeff; }
+.console-body .line.purple { color: #f06cff; }
+
+/* Hologram screen projector overlay */
+.hologram-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(3, 8, 20, 0.85);
+    backdrop-filter: blur(8px);
+    z-index: 100;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+}
+
+.hologram-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.holo-content {
+    background: rgba(0, 17, 36, 0.75);
+    border: 2px solid #52ecff;
+    box-shadow: 0 0 30px rgba(82, 236, 255, 0.3), inset 0 0 20px rgba(82, 236, 255, 0.15);
+    border-radius: 20px;
+    padding: 2.5rem;
+    position: relative;
+    max-width: 500px;
+    width: 90%;
+    color: #a4f4ff;
+    text-align: center;
+    overflow: hidden;
+}
+
+.holo-static {
+    position: absolute;
+    top:0; left:0; width:100%; height:100%;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+    background-size: 100% 4px, 6px 100%;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.holo-flicker {
+    position: absolute;
+    top:0; left:0; width:100%; height:100%;
+    background: rgba(82, 236, 255, 0.03);
+    animation: flicker 0.15s infinite;
+    pointer-events: none;
+}
+
+@keyframes flicker {
+    0% { opacity: 0.97; }
+    50% { opacity: 1; }
+    100% { opacity: 0.9; }
+}
+
+.holo-title {
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    letter-spacing: 3px;
+    margin-bottom: 1.5rem;
+    text-shadow: 0 0 8px #52ecff;
+}
+
+.holo-art {
+    font-family: var(--font-cyber);
+    font-size: 0.85rem;
+    line-height: 1.3;
+    white-space: pre;
+    display: inline-block;
+    text-align: left;
+    margin: 1.5rem 0;
+    color: #52ecff;
+    text-shadow: 0 0 10px rgba(82, 236, 255, 0.5);
+}
+
+.holo-details {
+    font-size: 0.75rem;
+    color: #52ecff88;
+    margin-top: 1rem;
+}
+
+/* Walkthrough Footer Control Bar */
+.walkthrough-control-bar {
+    position: fixed;
+    bottom: 0; left: 0; width: 100%;
+    background: rgba(8, 11, 22, 0.95);
+    border-top: 2px solid rgba(255, 232, 31, 0.5);
+    backdrop-filter: blur(10px);
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 -10px 30px rgba(0,0,0,0.8);
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+}
+
+.timeline-progress-container {
+    width: 100%;
+    height: 4px;
+    background: rgba(255,255,255,0.1);
+    position: relative;
+    cursor: pointer;
+}
+
+.timeline-bar {
+    height: 100%;
+    width: 0%;
+    background: #ffe81f;
+    box-shadow: 0 0 8px #ffe81f;
+    transition: width 0.3s ease;
+}
+
+.control-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.8rem 2rem;
+}
+
+.control-row .info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.status-badge {
+    background: #ffe81f;
+    color: black;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.75rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    box-shadow: 0 0 8px rgba(255, 232, 31, 0.4);
+}
+
+.walkthrough-instruction {
+    font-size: 0.9rem;
+    font-family: var(--font-body);
+    color: var(--text-color);
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.wt-btn {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: var(--font-cyber);
+    font-size: 0.85rem;
+    transition: all 0.2s;
+}
+
+.wt-btn:hover {
+    background: rgba(255,255,255,0.18);
+}
+
+.wt-btn.highlight {
+    background: #ffe81f;
+    color: black;
+    font-weight: bold;
+    border-color: #ffe81f;
+}
+
+.wt-btn.highlight:hover {
+    background: #e2cc12;
+}
+
+.wt-btn.outline {
+    background: transparent;
+    border-color: rgba(255, 0, 50, 0.4);
+    color: #ff3355;
+}
+
+.wt-btn.outline:hover {
+    background: rgba(255, 0, 50, 0.1);
+}
+
+/* Hidden elements */
+.hidden-device {
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+.panel-open .hidden-device {
+    opacity: 1;
+}
+
+/* Responsive Styles */
+@media(max-width: 900px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+        padding: 1rem;
+    }
+    .phone-mockup-wrapper {
+        margin-bottom: 2rem;
+    }
+}

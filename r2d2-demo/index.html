@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>R2-D2 ESP32 Controller - Interactive Demo</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Chhare+Mono&family=Inter:wght@300;400;600;700&family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="stars-bg"></div>
+    <div class="nebula-bg"></div>
+
+    <header class="app-header">
+        <div class="logo-area">
+            <span class="starwars-font">R2-D2</span>
+            <span class="subtitle">ESP32 CONTROLLER SIMULATOR v1.0.4</span>
+        </div>
+        <div class="top-controls">
+            <button id="toggle-audio-btn" class="glow-btn small">
+                <span class="icon">🔊</span> Mute Sound
+            </button>
+            <button id="start-walkthrough-btn" class="glow-btn highlight">
+                <span class="icon">🎬</span> Play Guided Tour
+            </button>
+        </div>
+    </header>
+
+    <main class="dashboard-grid">
+        <!-- LEFT: Android Smartphone Mockup -->
+        <section class="phone-mockup-wrapper">
+            <div class="phone-frame">
+                <div class="phone-camera-notch"></div>
+                <div class="phone-screen">
+                    <div class="android-status-bar">
+                        <span class="time">17:04</span>
+                        <div class="icons">
+                            <span class="network-icon">📶</span>
+                            <span class="bluetooth-icon active" id="ble-indicator">🔵 BLE</span>
+                            <span class="battery">94% 🔋</span>
+                        </div>
+                    </div>
+
+                    <div class="app-nav">
+                        <span class="app-title">ASTROMECH CONTROLLER</span>
+                        <div class="connection-pill connected" id="connection-pill">CONNECTED</div>
+                    </div>
+
+                    <div class="app-content">
+                        <!-- Connection Config -->
+                        <div class="card connection-settings">
+                            <div class="card-header">
+                                <h3>ESP32 Connection</h3>
+                                <span class="device-name">ESP32-R2D2-BLE</span>
+                            </div>
+                            <button id="connect-btn" class="app-btn connected-btn">Disconnect Device</button>
+                        </div>
+
+                        <!-- LED & PSI Colors -->
+                        <div class="card color-settings">
+                            <div class="card-header">
+                                <h3>PSI LEDs & Color Profiles</h3>
+                            </div>
+                            <div class="color-options-grid">
+                                <button class="color-preset-btn active" data-color="#0022ff" style="--btn-color: #0022ff;"></button>
+                                <button class="color-preset-btn" data-color="#ff0022" style="--btn-color: #ff0022;"></button>
+                                <button class="color-preset-btn" data-color="#00ff66" style="--btn-color: #00ff66;"></button>
+                                <button class="color-preset-btn" data-color="#ffaa00" style="--btn-color: #ffaa00;"></button>
+                                <button class="color-preset-btn" data-color="#ff00ff" style="--btn-color: #ff00ff;"></button>
+                                <div class="color-picker-wrapper">
+                                    <input type="color" id="custom-color-picker" value="#0022ff">
+                                    <span>Custom</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Holo Projector D-Pad -->
+                        <div class="card holo-settings">
+                            <div class="card-header">
+                                <h3>Holo Projector (Pan/Tilt)</h3>
+                                <span class="badge" id="holo-coords">X: 0, Y: 0</span>
+                            </div>
+                            <div class="joystick-control-area">
+                                <div class="joystick-ring">
+                                    <div class="joystick-knob" id="joystick-knob"></div>
+                                    <button class="joy-dir up" id="joy-up">▲</button>
+                                    <button class="joy-dir right" id="joy-right">▶</button>
+                                    <button class="joy-dir down" id="joy-down">▼</button>
+                                    <button class="joy-dir left" id="joy-left">◀</button>
+                                </div>
+                                <div class="holo-actions">
+                                    <button id="beam-btn" class="app-btn active-glowing">Toggle Holo Projection</button>
+                                    <button id="reset-holo-btn" class="app-btn outline">Recenter Projector</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pie Panel Utility Switches -->
+                        <div class="card panels-settings">
+                            <div class="card-header">
+                                <h3>Dome Pie Panels</h3>
+                            </div>
+                            <div class="switches-grid">
+                                <div class="switch-row">
+                                    <span class="switch-label">Top Panel 1 (Radar)</span>
+                                    <label class="switch">
+                                        <input type="checkbox" id="panel-top1">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                                <div class="switch-row">
+                                    <span class="switch-label">Top Panel 2 (Scanner)</span>
+                                    <label class="switch">
+                                        <input type="checkbox" id="panel-top2">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                                <div class="switch-row">
+                                    <span class="switch-label">Rear Panel 1 (Saber Link)</span>
+                                    <label class="switch">
+                                        <input type="checkbox" id="panel-rear1">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Logic Display Messages -->
+                        <div class="card logic-settings">
+                            <div class="card-header">
+                                <h3>Logic Display Text</h3>
+                            </div>
+                            <div class="input-group">
+                                <label for="front-logic-input">Front Logic Display</label>
+                                <input type="text" id="front-logic-input" value="R2-D2 OK" maxlength="16" placeholder="Enter text to display...">
+                            </div>
+                            <div class="input-group">
+                                <label for="rear-logic-input">Rear Logic Display</label>
+                                <input type="text" id="rear-logic-input" value="SYS-ONLINE" maxlength="16" placeholder="Enter text to display...">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- RIGHT: Interactive R2-D2 Simulator & Console -->
+        <section class="simulator-wrapper">
+            <!-- Simulated R2-D2 Head Display -->
+            <div class="r2d2-sim-card">
+                <div class="glow-rim"></div>
+                <h2 class="card-title"><span class="terminal-prompt">&gt;</span> R2-D2 DOME STATE</h2>
+                
+                <div class="r2d2-viewport">
+                    <!-- SVG Vector Model of R2-D2 Dome -->
+                    <svg id="r2d2-svg" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <!-- Metallic gradients -->
+                            <linearGradient id="dome-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#eaedf2" />
+                                <stop offset="50%" stop-color="#b8c2d1" />
+                                <stop offset="100%" stop-color="#738299" />
+                            </linearGradient>
+                            <linearGradient id="blue-metal" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#0d3c94" />
+                                <stop offset="100%" stop-color="#041a4a" />
+                            </linearGradient>
+                            <radialGradient id="psi-glow" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" stop-color="#ffffff" />
+                                <stop offset="30%" id="psi-glow-mid" stop-color="#0022ff" />
+                                <stop offset="100%" stop-color="#000000" stop-opacity="0" />
+                            </radialGradient>
+                            <radialGradient id="holo-light" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9" />
+                                <stop offset="40%" stop-color="#64dfdf" stop-opacity="0.6" />
+                                <stop offset="100%" stop-color="#64dfdf" stop-opacity="0" />
+                            </radialGradient>
+                        </defs>
+
+                        <!-- Dome Main Body -->
+                        <path d="M 50 250 A 150 150 0 0 1 350 250 Z" fill="url(#dome-grad)" stroke="#4d5a6e" stroke-width="4" />
+                        <rect x="50" y="246" width="300" height="15" fill="url(#dome-grad)" stroke="#4d5a6e" stroke-width="4" />
+                        
+                        <!-- Dome Panels and Blue Inlays -->
+                        <path d="M 120 120 L 150 125 L 150 160 L 120 150 Z" fill="url(#blue-metal)" stroke="#222" />
+                        <path d="M 250 125 L 280 120 L 280 150 L 250 160 Z" fill="url(#blue-metal)" stroke="#222" />
+                        
+                        <!-- Dynamic Pie Panel 1 (Top Left) -->
+                        <g id="pie-panel-top1-group">
+                            <path id="pie-panel-top1" d="M 80 180 L 130 180 L 130 210 L 80 200 Z" fill="#9ba8b8" stroke="#4d5a6e" stroke-width="2" class="panel-flap" />
+                            <!-- Simulated Scanner Inside -->
+                            <rect id="scanner-interior" x="85" y="185" width="40" height="15" fill="#111" class="hidden-device" />
+                            <circle id="scanner-led" cx="105" cy="192" r="3" fill="#ff0000" class="hidden-device blinking" />
+                        </g>
+
+                        <!-- Dynamic Pie Panel 2 (Top Right) -->
+                        <g id="pie-panel-top2-group">
+                            <path id="pie-panel-top2" d="M 270 180 L 320 180 L 320 200 L 270 210 Z" fill="#9ba8b8" stroke="#4d5a6e" stroke-width="2" class="panel-flap" />
+                            <!-- Simulated Radar Inside -->
+                            <polygon id="radar-interior" points="280,205 295,185 310,205" fill="#ffd000" class="hidden-device" />
+                        </g>
+
+                        <!-- Dynamic Pie Panel 3 (Rear / Center High) -->
+                        <g id="pie-panel-rear1-group">
+                            <path id="pie-panel-rear1" d="M 170 110 L 230 110 L 220 135 L 180 135 Z" fill="#9ba8b8" stroke="#4d5a6e" stroke-width="2" class="panel-flap" />
+                        </g>
+
+                        <!-- Main LED (PSI) Status Display -->
+                        <circle cx="200" cy="180" r="16" fill="#111" stroke="#333" stroke-width="3" />
+                        <circle id="psi-led-light" cx="200" cy="180" r="12" fill="url(#psi-glow)" />
+
+                        <!-- Front Logic Display Matrix Display -->
+                        <rect x="140" y="145" width="120" height="24" fill="#050811" rx="4" stroke="#2a3d5e" stroke-width="2" />
+                        <foreignObject x="142" y="147" width="116" height="20">
+                            <div xmlns="http://www.w3.org/1999/xhtml" class="matrix-text" id="front-logic-matrix">
+                                R2-D2 OK
+                            </div>
+                        </foreignObject>
+
+                        <!-- Holo Projector Unit (Pan/Tilt) -->
+                        <g id="holo-projector-assembly" transform="translate(0, 0)">
+                            <!-- Base Socket -->
+                            <ellipse cx="200" cy="225" rx="22" ry="12" fill="#1d2f4d" stroke="#111" />
+                            <!-- Moving Projector Eyeball -->
+                            <g id="holo-eye">
+                                <circle cx="200" cy="220" r="15" fill="url(#dome-grad)" stroke="#111" />
+                                <circle cx="200" cy="220" r="8" fill="#111" />
+                                <circle id="holo-lens-glow" cx="200" cy="220" r="4" fill="#64dfdf" />
+                            </g>
+                            <!-- Projection Beam Ray -->
+                            <polygon id="holo-beam-ray" points="200,220 100,380 300,380" fill="url(#holo-light)" style="mix-blend-mode: screen; pointer-events: none; opacity: 0;" />
+                        </g>
+
+                        <!-- Frame Details -->
+                        <line x1="50" y1="250" x2="350" y2="250" stroke="#222" stroke-width="3" />
+                    </svg>
+
+                    <!-- Overlay information display of rear logic display (not visible directly on R2's face) -->
+                    <div class="rear-logic-monitor">
+                        <span class="label">Rear Logic Display Emulator:</span>
+                        <div class="rear-matrix" id="rear-logic-matrix">SYS-ONLINE</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ESP32 Console Panel -->
+            <div class="esp32-console-card">
+                <div class="console-header">
+                    <span class="dot red"></span>
+                    <span class="dot yellow"></span>
+                    <span class="dot green"></span>
+                    <span class="terminal-title">ESP32 BLE SERIAL LOGGER (/dev/tty.usbserial-1410)</span>
+                </div>
+                <div class="console-body" id="console-logs">
+                    <div class="line green">[SYSTEM] Initializing ESP32 firmware...</div>
+                    <div class="line green">[SYSTEM] Starting BLE Peripheral Advertisement: R2-D2-Controls</div>
+                    <div class="line yellow">[BLE] Waiting for pairing connection...</div>
+                    <div class="line blue">[BLE] Connected to user Android client. Session Active.</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Guided Walkthrough Video Simulator Overlay Control -->
+    <footer class="walkthrough-control-bar" id="walkthrough-bar" style="display: none;">
+        <div class="timeline-progress-container">
+            <div class="timeline-bar" id="timeline-bar"></div>
+        </div>
+        <div class="control-row">
+            <div class="info">
+                <span class="status-badge">GUIDED DEMO</span>
+                <p class="walkthrough-instruction" id="walkthrough-instruction">Welcome! Press play to begin the demonstration.</p>
+            </div>
+            <div class="action-buttons">
+                <button id="wt-prev" class="wt-btn">◀ Prev</button>
+                <button id="wt-play-pause" class="wt-btn highlight">Play</button>
+                <button id="wt-next" class="wt-btn">Next ▶</button>
+                <button id="wt-close" class="wt-btn outline">Exit Tour</button>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Interactive Projection Screen (Hologram target) -->
+    <div id="hologram-screen" class="hologram-overlay">
+        <div class="holo-content">
+            <div class="holo-static"></div>
+            <div class="holo-flicker"></div>
+            <div class="holo-message">
+                <h3 class="holo-title">PROJECTING ARCHIVE DATA</h3>
+                <pre class="holo-art">
+     /\_/\
+    ( o.o )   - "HELP ME OBI-WAN,
+     > ^ <     YOU'RE MY ONLY HOPE!"
+                </pre>
+                <p class="holo-details">File: leia_message.holo [Size: 14.8MB]</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
