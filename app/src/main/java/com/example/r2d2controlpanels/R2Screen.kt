@@ -740,11 +740,11 @@ fun R2Screen(
                                         // FIXED DIRECTION
 
                                         pan.floatValue =
-                                            ((-newX / maxRadius) * 90f + 90f)
+                                            ((newX / maxRadius) * 90f + 90f)
                                                 .coerceIn(0f, 180f)
 
                                         tilt.floatValue =
-                                            ((-newY / maxRadius) * 90f + 90f)
+                                            ((newY / maxRadius) * 90f + 90f)
                                                 .coerceIn(0f, 180f)
 
                                         sendHolo()
