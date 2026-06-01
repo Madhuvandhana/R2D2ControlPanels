@@ -5,6 +5,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -58,7 +59,8 @@ fun R2DomeStateCard(
     holoActive: Boolean,
     rearLogicText: String,
     pan: Float,
-    tilt: Float
+    tilt: Float,
+    onPanelsToggle: (Boolean) -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -106,6 +108,30 @@ fun R2DomeStateCard(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(12.dp)
+                        .pointerInput(Unit) {
+                            detectTapGestures { offset ->
+                                val w = size.width.toFloat()
+                                val h = size.height.toFloat()
+                                val cx = w / 2f
+                                val cy = h * 0.75f
+                                
+                                val x = offset.x
+                                val y = offset.y
+                                
+                                val isLeftPanel = x in (cx - 70.dp.toPx())..(cx - 30.dp.toPx()) &&
+                                        y in (cy - 35.dp.toPx())..(cy - 2.dp.toPx())
+                                
+                                val isRightPanel = x in (cx + 30.dp.toPx())..(cx + 70.dp.toPx()) &&
+                                        y in (cy - 35.dp.toPx())..(cy - 2.dp.toPx())
+                                        
+                                val isRearPanel = x in (cx - 20.dp.toPx())..(cx + 20.dp.toPx()) &&
+                                        y in (cy - 75.dp.toPx())..(cy - 40.dp.toPx())
+                                        
+                                if (isLeftPanel || isRightPanel || isRearPanel) {
+                                    onPanelsToggle(!panelsOpen)
+                                }
+                            }
+                        }
                 ) {
                     val w = size.width
                     val h = size.height
@@ -343,6 +369,34 @@ fun R2DomeStateCard(
                     fontFamily = FontFamily.Monospace,
                     modifier = Modifier.align(Alignment.Center).offset(y = (-39).dp)
                 )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Overlay panel control buttons
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Button(
+                    onClick = { onPanelsToggle(true) },
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF1976D2)
+                    )
+                ) {
+                    Text("OPEN DOME", fontSize = 12.sp)
+                }
+
+                Button(
+                    onClick = { onPanelsToggle(false) },
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF455A64)
+                    )
+                ) {
+                    Text("CLOSE DOME", fontSize = 12.sp)
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -628,7 +682,15 @@ fun R2Screen(
                 holoActive = holoLightsEnabled.value,
                 rearLogicText = rearLogicMessage.value,
                 pan = pan.floatValue,
-                tilt = tilt.floatValue
+                tilt = tilt.floatValue,
+                onPanelsToggle = { open ->
+                    panelsOpen.value = open
+                    if (open) {
+                        bluetoothController.send("OPEN_TOP\n")
+                    } else {
+                        bluetoothController.send("CLOSE_TOP\n")
+                    }
+                }
             )
 
             Spacer(
