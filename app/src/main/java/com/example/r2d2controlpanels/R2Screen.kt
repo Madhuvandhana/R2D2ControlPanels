@@ -506,25 +506,25 @@ fun R2BodyStateCard(
                                 val x = offset.x
                                 val y = offset.y
 
-                                val isLeft = x in (cx - 60.dp.toPx())..(cx - 30.dp.toPx()) &&
-                                        y in (cy - 90.dp.toPx())..(cy - 10.dp.toPx())
-                                val isRight = x in (cx + 30.dp.toPx())..(cx + 60.dp.toPx()) &&
-                                        y in (cy - 90.dp.toPx())..(cy - 10.dp.toPx())
-                                val isCharge = x in (cx - 28.dp.toPx())..(cx - 2.dp.toPx()) &&
-                                        y in (cy - 35.dp.toPx())..(cy - 5.dp.toPx())
-                                val isData = x in (cx + 2.dp.toPx())..(cx + 28.dp.toPx()) &&
-                                        y in (cy - 35.dp.toPx())..(cy - 5.dp.toPx())
-                                val isUtilA = x in (cx - 32.dp.toPx())..(cx - 10.dp.toPx()) &&
-                                        y in (cy + 25.dp.toPx())..(cy + 45.dp.toPx())
-                                val isUtilB = x in (cx + 10.dp.toPx())..(cx + 32.dp.toPx()) &&
-                                        y in (cy + 25.dp.toPx())..(cy + 45.dp.toPx())
+                                val isUtilA = x in (cx - 35.dp.toPx())..(cx + 35.dp.toPx()) &&
+                                        y in (cy - 70.dp.toPx())..(cy - 58.dp.toPx())
+                                val isUtilB = x in (cx - 35.dp.toPx())..(cx + 35.dp.toPx()) &&
+                                        y in (cy - 56.dp.toPx())..(cy - 44.dp.toPx())
+                                val isLeft = x in (cx - 48.dp.toPx())..(cx - 32.dp.toPx()) &&
+                                        y in (cy - 35.dp.toPx())..(cy + 25.dp.toPx())
+                                val isRight = x in (cx + 32.dp.toPx())..(cx + 48.dp.toPx()) &&
+                                        y in (cy - 35.dp.toPx())..(cy + 25.dp.toPx())
+                                val isCharge = x in (cx - 35.dp.toPx())..(cx - 15.dp.toPx()) &&
+                                        y in (cy + 35.dp.toPx())..(cy + 55.dp.toPx())
+                                val isData = x in (cx + 15.dp.toPx())..(cx + 35.dp.toPx()) &&
+                                        y in (cy + 35.dp.toPx())..(cy + 55.dp.toPx())
 
-                                if (isLeft) onGripperToggle(!gripperOpen)
+                                if (isUtilA) onUtilityArmAToggle(!utilityArmAOpen)
+                                else if (isUtilB) onUtilityArmBToggle(!utilityArmBOpen)
+                                else if (isLeft) onGripperToggle(!gripperOpen)
                                 else if (isRight) onInterfaceToggle(!interfaceOpen)
                                 else if (isCharge) onChargeToggle(!chargeOpen)
                                 else if (isData) onDataToggle(!dataOpen)
-                                else if (isUtilA) onUtilityArmAToggle(!utilityArmAOpen)
-                                else if (isUtilB) onUtilityArmBToggle(!utilityArmBOpen)
                             }
                         }
                 ) {
@@ -563,218 +563,31 @@ fun R2BodyStateCard(
                         style = Stroke(width = 3.dp.toPx())
                     )
 
-                    // Draw body panel details
+                    // Draw body top blue line detail (marked as 1 in image)
                     drawRect(
                         color = Color(0xFF0D3C94),
-                        topLeft = Offset(cx - 30.dp.toPx(), cy - 75.dp.toPx()),
-                        size = androidx.compose.ui.geometry.Size(60.dp.toPx(), 14.dp.toPx())
+                        topLeft = Offset(cx - 35.dp.toPx(), cy - 75.dp.toPx()),
+                        size = androidx.compose.ui.geometry.Size(70.dp.toPx(), 3.dp.toPx())
                     )
-                    
-                    // 1. Left Large Panel (Gripper)
-                    val leftPanelX = cx - 45.dp.toPx()
-                    val leftPanelY = cy - 50.dp.toPx()
-                    val leftPanelW = 16.dp.toPx()
-                    val leftPanelH = 65.dp.toPx()
 
-                    if (gripperOpen) {
-                        // Swing door 1 open to the left
-                        val doorPath = androidx.compose.ui.graphics.Path().apply {
-                            moveTo(leftPanelX, leftPanelY)
-                            lineTo(leftPanelX - 18.dp.toPx(), leftPanelY - 5.dp.toPx())
-                            lineTo(leftPanelX - 18.dp.toPx(), leftPanelY + leftPanelH + 5.dp.toPx())
-                            lineTo(leftPanelX, leftPanelY + leftPanelH)
-                            close()
-                        }
-                        drawPath(path = doorPath, color = Color(0xFFB8C2D1))
-                        drawPath(path = doorPath, color = Color(0xFF4D5A6E), style = Stroke(width = 1.5.dp.toPx()))
-
-                        // Draw deployed Gripper Arm (3)
-                        drawLine(
-                            color = Color(0xFF738299),
-                            start = Offset(leftPanelX + leftPanelW/2f, leftPanelY + 10.dp.toPx()),
-                            end = Offset(leftPanelX - 12.dp.toPx(), leftPanelY + 35.dp.toPx()),
-                            strokeWidth = 4.dp.toPx()
-                        )
-                        // Claw hook details
-                        drawCircle(
-                            color = Color(0xFF222222),
-                            radius = 4.dp.toPx(),
-                            center = Offset(leftPanelX - 12.dp.toPx(), leftPanelY + 35.dp.toPx())
-                        )
-                    } else {
-                        // Closed door
-                        drawRect(
-                            color = Color(0xFF0D3C94),
-                            topLeft = Offset(leftPanelX, leftPanelY),
-                            size = androidx.compose.ui.geometry.Size(leftPanelW, leftPanelH)
-                        )
-                        drawRect(
-                            color = Color(0xFF4D5A6E),
-                            topLeft = Offset(leftPanelX, leftPanelY),
-                            size = androidx.compose.ui.geometry.Size(leftPanelW, leftPanelH),
-                            style = Stroke(width = 1.5.dp.toPx())
-                        )
-                    }
-
-                    // 2. Right Large Panel (Interface Arm)
-                    val rightPanelX = cx + 29.dp.toPx()
-                    val rightPanelY = cy - 50.dp.toPx()
-                    val rightPanelW = 16.dp.toPx()
-                    val rightPanelH = 65.dp.toPx()
-
-                    if (interfaceOpen) {
-                        // Swing door 5 open to the right
-                        val doorPath = androidx.compose.ui.graphics.Path().apply {
-                            moveTo(rightPanelX + rightPanelW, rightPanelY)
-                            lineTo(rightPanelX + rightPanelW + 18.dp.toPx(), rightPanelY - 5.dp.toPx())
-                            lineTo(rightPanelX + rightPanelW + 18.dp.toPx(), rightPanelY + rightPanelH + 5.dp.toPx())
-                            lineTo(rightPanelX + rightPanelW, rightPanelY + rightPanelH)
-                            close()
-                        }
-                        drawPath(path = doorPath, color = Color(0xFFB8C2D1))
-                        drawPath(path = doorPath, color = Color(0xFF4D5A6E), style = Stroke(width = 1.5.dp.toPx()))
-
-                        // Draw deployed Interface Arm (8)
-                        drawLine(
-                            color = Color(0xFF738299),
-                            start = Offset(rightPanelX + rightPanelW/2f, rightPanelY + 10.dp.toPx()),
-                            end = Offset(rightPanelX + rightPanelW + 12.dp.toPx(), rightPanelY + 40.dp.toPx()),
-                            strokeWidth = 3.dp.toPx()
-                        )
-                        drawCircle(
-                            color = Color(0xFF00FF99),
-                            radius = 3.dp.toPx(),
-                            center = Offset(rightPanelX + rightPanelW + 12.dp.toPx(), rightPanelY + 40.dp.toPx())
-                        )
-                    } else {
-                        // Closed door
-                        drawRect(
-                            color = Color(0xFF0D3C94),
-                            topLeft = Offset(rightPanelX, rightPanelY),
-                            size = androidx.compose.ui.geometry.Size(rightPanelW, rightPanelH)
-                        )
-                        drawRect(
-                            color = Color(0xFF4D5A6E),
-                            topLeft = Offset(rightPanelX, rightPanelY),
-                            size = androidx.compose.ui.geometry.Size(rightPanelW, rightPanelH),
-                            style = Stroke(width = 1.5.dp.toPx())
-                        )
-                    }
-
-                    // 3. Charge Door (2) & Interior (4)
-                    val chargeX = cx - 22.dp.toPx()
-                    val chargeY = cy - 25.dp.toPx()
-                    val chargeW = 18.dp.toPx()
-                    val chargeH = 20.dp.toPx()
-
-                    if (chargeOpen) {
-                        // Draw slot background (4)
-                        drawRect(
-                            color = Color(0xFF111111),
-                            topLeft = Offset(chargeX, chargeY),
-                            size = androidx.compose.ui.geometry.Size(chargeW, chargeH)
-                        )
-                        // Red LEDs
-                        drawCircle(color = Color(0xFFFF0022), radius = 2.dp.toPx(), center = Offset(chargeX + 5.dp.toPx(), chargeY + 5.dp.toPx()))
-                        drawCircle(color = Color(0xFFFF0022), radius = 2.dp.toPx(), center = Offset(chargeX + 5.dp.toPx(), chargeY + 12.dp.toPx()))
-                        // USB ports
-                        drawRect(color = Color(0xFF738299), topLeft = Offset(chargeX + 10.dp.toPx(), chargeY + 4.dp.toPx()), size = androidx.compose.ui.geometry.Size(6.dp.toPx(), 4.dp.toPx()))
-                        drawRect(color = Color(0xFF738299), topLeft = Offset(chargeX + 10.dp.toPx(), chargeY + 11.dp.toPx()), size = androidx.compose.ui.geometry.Size(6.dp.toPx(), 4.dp.toPx()))
-
-                        // Swung door (2)
-                        val doorPath = androidx.compose.ui.graphics.Path().apply {
-                            moveTo(chargeX, chargeY)
-                            lineTo(chargeX - 12.dp.toPx(), chargeY - 2.dp.toPx())
-                            lineTo(chargeX - 12.dp.toPx(), chargeY + chargeH + 2.dp.toPx())
-                            lineTo(chargeX, chargeY + chargeH)
-                            close()
-                        }
-                        drawPath(path = doorPath, color = Color(0xFFB8C2D1))
-                        drawPath(path = doorPath, color = Color(0xFF4D5A6E), style = Stroke(width = 1.dp.toPx()))
-                    } else {
-                        // Closed door
-                        drawRect(
-                            color = Color(0xFF9BA8B8),
-                            topLeft = Offset(chargeX, chargeY),
-                            size = androidx.compose.ui.geometry.Size(chargeW, chargeH)
-                        )
-                        drawRect(
-                            color = Color(0xFF4D5A6E),
-                            topLeft = Offset(chargeX, chargeY),
-                            size = androidx.compose.ui.geometry.Size(chargeW, chargeH),
-                            style = Stroke(width = 1.dp.toPx())
-                        )
-                    }
-
-                    // 4. Data Port / Diagnostic Door (6) & Matrix (7)
-                    val dataX = cx + 4.dp.toPx()
-                    val dataY = cy - 25.dp.toPx()
-                    val dataW = 18.dp.toPx()
-                    val dataH = 20.dp.toPx()
-
-                    if (dataOpen) {
-                        // Draw slot background (7)
-                        drawRect(
-                            color = Color(0xFF111111),
-                            topLeft = Offset(dataX, dataY),
-                            size = androidx.compose.ui.geometry.Size(dataW, dataH)
-                        )
-                        // Status Matrix indicator bars
-                        drawRect(color = Color(0xFFFFD54F), topLeft = Offset(dataX + 3.dp.toPx(), dataY + 3.dp.toPx()), size = androidx.compose.ui.geometry.Size(5.dp.toPx(), 3.dp.toPx()))
-                        drawRect(color = Color(0xFF00FF99), topLeft = Offset(dataX + 3.dp.toPx(), dataY + 8.dp.toPx()), size = androidx.compose.ui.geometry.Size(5.dp.toPx(), 3.dp.toPx()))
-                        drawRect(color = Color(0xFF0055FF), topLeft = Offset(dataX + 10.dp.toPx(), dataY + 5.dp.toPx()), size = androidx.compose.ui.geometry.Size(4.dp.toPx(), 10.dp.toPx()))
-
-                        // Swung door (6)
-                        val doorPath = androidx.compose.ui.graphics.Path().apply {
-                            moveTo(dataX + dataW, dataY)
-                            lineTo(dataX + dataW + 12.dp.toPx(), dataY - 2.dp.toPx())
-                            lineTo(dataX + dataW + 12.dp.toPx(), dataY + dataH + 2.dp.toPx())
-                            lineTo(dataX + dataW, dataY + dataH)
-                            close()
-                        }
-                        drawPath(path = doorPath, color = Color(0xFFB8C2D1))
-                        drawPath(path = doorPath, color = Color(0xFF4D5A6E), style = Stroke(width = 1.dp.toPx()))
-                    } else {
-                        // Closed door
-                        drawRect(
-                            color = Color(0xFF9BA8B8),
-                            topLeft = Offset(dataX, dataY),
-                            size = androidx.compose.ui.geometry.Size(dataW, dataH)
-                        )
-                        drawRect(
-                            color = Color(0xFF4D5A6E),
-                            topLeft = Offset(dataX, dataY),
-                            size = androidx.compose.ui.geometry.Size(dataW, dataH),
-                            style = Stroke(width = 1.dp.toPx())
-                        )
-                    }
-
-                    // 5. Utility Arm A (Left Bottom)
-                    val utilAX = cx - 32.dp.toPx()
-                    val utilAY = cy + 30.dp.toPx()
-                    val utilAW = 22.dp.toPx()
+                    // 1. Utility Arm A (Top horizontal panel - 2)
+                    val utilAX = cx - 35.dp.toPx()
+                    val utilAY = cy - 70.dp.toPx()
+                    val utilAW = 70.dp.toPx()
                     val utilAH = 12.dp.toPx()
 
                     if (utilityArmAOpen) {
-                        // Swung open Utility Arm A path
-                        val armPath = androidx.compose.ui.graphics.Path().apply {
+                        // Pivoted/Swung open outward to the left
+                        val path = androidx.compose.ui.graphics.Path().apply {
                             moveTo(utilAX, utilAY)
-                            lineTo(utilAX - 15.dp.toPx(), utilAY + 10.dp.toPx())
-                            lineTo(utilAX - 15.dp.toPx(), utilAY + utilAH + 10.dp.toPx())
+                            lineTo(utilAX - 20.dp.toPx(), utilAY - 4.dp.toPx())
+                            lineTo(utilAX - 20.dp.toPx(), utilAY + utilAH + 4.dp.toPx())
                             lineTo(utilAX, utilAY + utilAH)
                             close()
                         }
-                        drawPath(path = armPath, color = Color(0xFFB8C2D1))
-                        drawPath(path = armPath, color = Color(0xFF4D5A6E), style = Stroke(width = 1.dp.toPx()))
-                        // Deployed tool extension
-                        drawLine(
-                            color = Color(0xFF738299),
-                            start = Offset(utilAX - 15.dp.toPx(), utilAY + utilAH / 2f + 5.dp.toPx()),
-                            end = Offset(utilAX - 30.dp.toPx(), utilAY + utilAH / 2f + 10.dp.toPx()),
-                            strokeWidth = 3.dp.toPx()
-                        )
+                        drawPath(path = path, color = Color(0xFFB8C2D1))
+                        drawPath(path = path, color = Color(0xFF4D5A6E), style = Stroke(width = 1.dp.toPx()))
                     } else {
-                        // Closed
                         drawRect(
                             color = Color(0xFF0D3C94),
                             topLeft = Offset(utilAX, utilAY),
@@ -788,32 +601,24 @@ fun R2BodyStateCard(
                         )
                     }
 
-                    // 6. Utility Arm B (Right Bottom)
-                    val utilBX = cx + 10.dp.toPx()
-                    val utilBY = cy + 30.dp.toPx()
-                    val utilBW = 22.dp.toPx()
+                    // 2. Utility Arm B (Second horizontal panel - 2)
+                    val utilBX = cx - 35.dp.toPx()
+                    val utilBY = cy - 56.dp.toPx()
+                    val utilBW = 70.dp.toPx()
                     val utilBH = 12.dp.toPx()
 
                     if (utilityArmBOpen) {
-                        // Swung open Utility Arm B path
-                        val armPath = androidx.compose.ui.graphics.Path().apply {
+                        // Pivoted/Swung open outward to the right
+                        val path = androidx.compose.ui.graphics.Path().apply {
                             moveTo(utilBX + utilBW, utilBY)
-                            lineTo(utilBX + utilBW + 15.dp.toPx(), utilBY + 10.dp.toPx())
-                            lineTo(utilBX + utilBW + 15.dp.toPx(), utilBY + utilBH + 10.dp.toPx())
+                            lineTo(utilBX + utilBW + 20.dp.toPx(), utilBY - 4.dp.toPx())
+                            lineTo(utilBX + utilBW + 20.dp.toPx(), utilBY + utilBH + 4.dp.toPx())
                             lineTo(utilBX + utilBW, utilBY + utilBH)
                             close()
                         }
-                        drawPath(path = armPath, color = Color(0xFFB8C2D1))
-                        drawPath(path = armPath, color = Color(0xFF4D5A6E), style = Stroke(width = 1.dp.toPx()))
-                        // Deployed tool extension
-                        drawLine(
-                            color = Color(0xFF738299),
-                            start = Offset(utilBX + utilBW + 15.dp.toPx(), utilBY + utilBH / 2f + 5.dp.toPx()),
-                            end = Offset(utilBX + utilBW + 30.dp.toPx(), utilBY + utilBH / 2f + 10.dp.toPx()),
-                            strokeWidth = 3.dp.toPx()
-                        )
+                        drawPath(path = path, color = Color(0xFFB8C2D1))
+                        drawPath(path = path, color = Color(0xFF4D5A6E), style = Stroke(width = 1.dp.toPx()))
                     } else {
-                        // Closed
                         drawRect(
                             color = Color(0xFF0D3C94),
                             topLeft = Offset(utilBX, utilBY),
@@ -826,6 +631,181 @@ fun R2BodyStateCard(
                             style = Stroke(width = 1.dp.toPx())
                         )
                     }
+
+                    // 3. Center Vents (3)
+                    val ventX = cx - 12.dp.toPx()
+                    val ventY = cy - 38.dp.toPx()
+                    val ventW = 24.dp.toPx()
+                    val ventH = 55.dp.toPx()
+                    // Draw outer vent blue border
+                    drawRoundRect(
+                        color = Color(0xFF0D3C94),
+                        topLeft = Offset(ventX, ventY),
+                        size = androidx.compose.ui.geometry.Size(ventW, ventH),
+                        cornerRadius = androidx.compose.ui.geometry.CornerRadius(4.dp.toPx(), 4.dp.toPx()),
+                        style = Stroke(width = 2.dp.toPx())
+                    )
+                    // Draw dark background inside vents
+                    drawRoundRect(
+                        color = Color(0xFF222222),
+                        topLeft = Offset(ventX + 2.dp.toPx(), ventY + 2.dp.toPx()),
+                        size = androidx.compose.ui.geometry.Size(ventW - 4.dp.toPx(), ventH - 4.dp.toPx()),
+                        cornerRadius = androidx.compose.ui.geometry.CornerRadius(2.dp.toPx(), 2.dp.toPx())
+                    )
+                    // Draw horizontal lines representing vent openings
+                    for (i in 0..6) {
+                        drawLine(
+                            color = Color(0xFF888888),
+                            start = Offset(ventX + 4.dp.toPx(), ventY + 6.dp.toPx() + i * 7.dp.toPx()),
+                            end = Offset(ventX + ventW - 4.dp.toPx(), ventY + 6.dp.toPx() + i * 7.dp.toPx()),
+                            strokeWidth = 2.dp.toPx()
+                        )
+                    }
+
+                    // 4. Left Large Panel (Gripper door)
+                    val leftPanelX = cx - 48.dp.toPx()
+                    val leftPanelY = cy - 35.dp.toPx()
+                    val leftPanelW = 12.dp.toPx()
+                    val leftPanelH = 60.dp.toPx()
+
+                    if (gripperOpen) {
+                        // Swing door open to the left
+                        val doorPath = androidx.compose.ui.graphics.Path().apply {
+                            moveTo(leftPanelX, leftPanelY)
+                            lineTo(leftPanelX - 14.dp.toPx(), leftPanelY - 4.dp.toPx())
+                            lineTo(leftPanelX - 14.dp.toPx(), leftPanelY + leftPanelH + 4.dp.toPx())
+                            lineTo(leftPanelX, leftPanelY + leftPanelH)
+                            close()
+                        }
+                        drawPath(path = doorPath, color = Color(0xFFB8C2D1))
+                        drawPath(path = doorPath, color = Color(0xFF4D5A6E), style = Stroke(width = 1.5.dp.toPx()))
+
+                        // Draw deployed Gripper Arm
+                        drawLine(
+                            color = Color(0xFF738299),
+                            start = Offset(leftPanelX + leftPanelW/2f, leftPanelY + 15.dp.toPx()),
+                            end = Offset(leftPanelX - 12.dp.toPx(), leftPanelY + 35.dp.toPx()),
+                            strokeWidth = 3.dp.toPx()
+                        )
+                        drawCircle(color = Color(0xFF222222), radius = 3.dp.toPx(), center = Offset(leftPanelX - 12.dp.toPx(), leftPanelY + 35.dp.toPx()))
+                    } else {
+                        drawRect(
+                            color = Color(0xFFEAEDF2),
+                            topLeft = Offset(leftPanelX, leftPanelY),
+                            size = androidx.compose.ui.geometry.Size(leftPanelW, leftPanelH)
+                        )
+                        drawRect(
+                            color = Color(0xFF4D5A6E),
+                            topLeft = Offset(leftPanelX, leftPanelY),
+                            size = androidx.compose.ui.geometry.Size(leftPanelW, leftPanelH),
+                            style = Stroke(width = 1.dp.toPx())
+                        )
+                    }
+
+                    // 5. Right Large Panel (Interface door)
+                    val rightPanelX = cx + 36.dp.toPx()
+                    val rightPanelY = cy - 35.dp.toPx()
+                    val rightPanelW = 12.dp.toPx()
+                    val rightPanelH = 60.dp.toPx()
+
+                    if (interfaceOpen) {
+                        // Swing door open to the right
+                        val doorPath = androidx.compose.ui.graphics.Path().apply {
+                            moveTo(rightPanelX + rightPanelW, rightPanelY)
+                            lineTo(rightPanelX + rightPanelW + 14.dp.toPx(), rightPanelY - 4.dp.toPx())
+                            lineTo(rightPanelX + rightPanelW + 14.dp.toPx(), rightPanelY + rightPanelH + 4.dp.toPx())
+                            lineTo(rightPanelX + rightPanelW, rightPanelY + rightPanelH)
+                            close()
+                        }
+                        drawPath(path = doorPath, color = Color(0xFFB8C2D1))
+                        drawPath(path = doorPath, color = Color(0xFF4D5A6E), style = Stroke(width = 1.5.dp.toPx()))
+
+                        // Draw deployed Interface Arm
+                        drawLine(
+                            color = Color(0xFF738299),
+                            start = Offset(rightPanelX + rightPanelW/2f, rightPanelY + 15.dp.toPx()),
+                            end = Offset(rightPanelX + rightPanelW + 12.dp.toPx(), rightPanelY + 35.dp.toPx()),
+                            strokeWidth = 3.dp.toPx()
+                        )
+                        drawCircle(color = Color(0xFF00FF99), radius = 3.dp.toPx(), center = Offset(rightPanelX + rightPanelW + 12.dp.toPx(), rightPanelY + 35.dp.toPx()))
+                    } else {
+                        drawRect(
+                            color = Color(0xFFEAEDF2),
+                            topLeft = Offset(rightPanelX, rightPanelY),
+                            size = androidx.compose.ui.geometry.Size(rightPanelW, rightPanelH)
+                        )
+                        drawRect(
+                            color = Color(0xFF4D5A6E),
+                            topLeft = Offset(rightPanelX, rightPanelY),
+                            size = androidx.compose.ui.geometry.Size(rightPanelW, rightPanelH),
+                            style = Stroke(width = 1.dp.toPx())
+                        )
+                    }
+
+                    // 6. Charge Door (Left Bottom - 7)
+                    val chargeX = cx - 35.dp.toPx()
+                    val chargeY = cy + 35.dp.toPx()
+                    val chargeW = 20.dp.toPx()
+                    val chargeH = 20.dp.toPx()
+
+                    if (chargeOpen) {
+                        drawRect(color = Color(0xFF111111), topLeft = Offset(chargeX, chargeY), size = androidx.compose.ui.geometry.Size(chargeW, chargeH))
+                        drawCircle(color = Color(0xFFFF0022), radius = 2.dp.toPx(), center = Offset(chargeX + 5.dp.toPx(), chargeY + 5.dp.toPx()))
+                        drawCircle(color = Color(0xFFFF0022), radius = 2.dp.toPx(), center = Offset(chargeX + 5.dp.toPx(), chargeY + 12.dp.toPx()))
+
+                        // Swung door (7)
+                        val doorPath = androidx.compose.ui.graphics.Path().apply {
+                            moveTo(chargeX, chargeY)
+                            lineTo(chargeX - 10.dp.toPx(), chargeY - 2.dp.toPx())
+                            lineTo(chargeX - 10.dp.toPx(), chargeY + chargeH + 2.dp.toPx())
+                            lineTo(chargeX, chargeY + chargeH)
+                            close()
+                        }
+                        drawPath(path = doorPath, color = Color(0xFFB8C2D1))
+                        drawPath(path = doorPath, color = Color(0xFF4D5A6E), style = Stroke(width = 1.dp.toPx()))
+                    } else {
+                        drawRect(color = Color(0xFF9BA8B8), topLeft = Offset(chargeX, chargeY), size = androidx.compose.ui.geometry.Size(chargeW, chargeH))
+                        drawRect(color = Color(0xFF4D5A6E), topLeft = Offset(chargeX, chargeY), size = androidx.compose.ui.geometry.Size(chargeW, chargeH), style = Stroke(width = 1.dp.toPx()))
+                    }
+
+                    // 7. Data Port / Diagnostic Door (Right Bottom - 9)
+                    val dataX = cx + 15.dp.toPx()
+                    val dataY = cy + 35.dp.toPx()
+                    val dataW = 20.dp.toPx()
+                    val dataH = 20.dp.toPx()
+
+                    if (dataOpen) {
+                        drawRect(color = Color(0xFF111111), topLeft = Offset(dataX, dataY), size = androidx.compose.ui.geometry.Size(dataW, dataH))
+                        drawRect(color = Color(0xFF00FF99), topLeft = Offset(dataX + 3.dp.toPx(), dataY + 8.dp.toPx()), size = androidx.compose.ui.geometry.Size(5.dp.toPx(), 3.dp.toPx()))
+                        drawRect(color = Color(0xFF0055FF), topLeft = Offset(dataX + 10.dp.toPx(), dataY + 5.dp.toPx()), size = androidx.compose.ui.geometry.Size(4.dp.toPx(), 10.dp.toPx()))
+
+                        // Swung door (9)
+                        val doorPath = androidx.compose.ui.graphics.Path().apply {
+                            moveTo(dataX + dataW, dataY)
+                            lineTo(dataX + dataW + 10.dp.toPx(), dataY - 2.dp.toPx())
+                            lineTo(dataX + dataW + 10.dp.toPx(), dataY + dataH + 2.dp.toPx())
+                            lineTo(dataX + dataW, dataY + dataH)
+                            close()
+                        }
+                        drawPath(path = doorPath, color = Color(0xFFB8C2D1))
+                        drawPath(path = doorPath, color = Color(0xFF4D5A6E), style = Stroke(width = 1.dp.toPx()))
+                    } else {
+                        drawRect(color = Color(0xFF9BA8B8), topLeft = Offset(dataX, dataY), size = androidx.compose.ui.geometry.Size(dataW, dataH))
+                        drawRect(color = Color(0xFF4D5A6E), topLeft = Offset(dataX, dataY), size = androidx.compose.ui.geometry.Size(dataW, dataH), style = Stroke(width = 1.dp.toPx()))
+                    }
+
+                    // 8. Round Detail (Bottom Center - 8)
+                    drawCircle(
+                        color = Color(0xFF0D3C94),
+                        radius = 8.dp.toPx(),
+                        center = Offset(cx, cy + 45.dp.toPx()),
+                        style = Stroke(width = 2.dp.toPx())
+                    )
+                    drawCircle(
+                        color = Color(0xFF4D5A6E),
+                        radius = 4.dp.toPx(),
+                        center = Offset(cx, cy + 45.dp.toPx())
+                    )
                 }
             }
 
