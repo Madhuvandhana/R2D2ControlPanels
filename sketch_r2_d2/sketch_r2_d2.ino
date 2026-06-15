@@ -66,6 +66,21 @@ bool rearholoLightsEnabled = true;
 
 String incoming = "";
 
+// ==========================================
+// DOME MOTOR
+// ==========================================
+
+#define DOME_PWM_PIN 25
+#define DOME_DIR_PIN 26
+
+#define DOME_PWM_CHANNEL 0
+
+// ==========================================
+// AS5600
+// ==========================================
+
+#define AS5600_ADDR 0x36
+
 // ==================================================
 // SERVO FUNCTION
 // ==================================================
@@ -875,6 +890,19 @@ else if (
       );
     }
   }
+  else if (
+    cmd.startsWith(
+        "DOME_GOTO:"
+    )
+)
+{
+    int angle =
+        cmd.substring(10)
+           .toInt();
+
+    domeGoto(angle);
+}
+
 }
 
 // ==================================================
@@ -987,7 +1015,129 @@ void setup() {
   Serial.println(
       "R2 SYSTEM READY"
   );
+
+  pinMode(DOME_DIR_PIN, OUTPUT);
+
+  ledcSetup(
+    DOME_PWM_CHANNEL,
+    20000,
+    8
+);
+
+  ledcAttachPin(
+    DOME_PWM_PIN,
+    DOME_PWM_CHANNEL
+);
+
+  ledcWrite(
+    DOME_PWM_CHANNEL,
+    0
+);
+
+domeGoto(0);
+
 }
+
+int readAS5600Angle() {
+
+  Wire.beginTransmission(0x36);
+  Wire.write(0x0E);
+
+  Wire.endTransmission();
+
+  Wire.requestFrom(0x36, 2);
+
+  int high = Wire.read();
+  int low = Wire.read();
+
+  int raw = (high << 8) | low;
+
+  raw &= 0x0FFF;
+
+  return map(
+      raw,
+      0,
+      4095,
+      0,
+      360
+  );
+}
+
+void domeStop() {
+
+  ledcWrite(
+      DOME_PWM_CHANNEL,
+      0
+  );
+}
+
+void domeLeft() {
+
+  digitalWrite(
+      DOME_DIR_PIN,
+      LOW
+  );
+
+  ledcWrite(
+      DOME_PWM_CHANNEL,
+      100
+  );
+}
+
+void domeRight() {
+
+  digitalWrite(
+      DOME_DIR_PIN,
+      HIGH
+  );
+
+  ledcWrite(
+      DOME_PWM_CHANNEL,
+      100
+  );
+}
+
+void domeGoto(
+    int targetAngle
+) {
+
+  int current =
+      readAS5600Angle();
+
+  int error =
+      targetAngle -
+      current;
+
+  if (abs(error) < 3) {
+
+    domeStop();
+
+    return;
+  }
+
+  if (error > 0) {
+
+    domeRight();
+
+  } else {
+
+    domeLeft();
+  }
+
+  while (
+      abs(
+          targetAngle -
+          readAS5600Angle()
+      ) > 3
+  ) {
+
+    delay(10);
+  }
+
+  domeStop();
+}
+
+
 
 // ==================================================
 // LOOP

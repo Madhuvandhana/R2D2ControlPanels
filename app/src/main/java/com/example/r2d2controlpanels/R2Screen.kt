@@ -436,6 +436,377 @@ fun R2DomeStateCard(
 }
 
 @Composable
+fun R2BodyStateCard(
+    connectionState: BluetoothState,
+    gripperOpen: Boolean,
+    interfaceOpen: Boolean,
+    chargeOpen: Boolean,
+    dataOpen: Boolean,
+    onGripperToggle: (Boolean) -> Unit,
+    onInterfaceToggle: (Boolean) -> Unit,
+    onChargeToggle: (Boolean) -> Unit,
+    onDataToggle: (Boolean) -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFF101923)
+        ),
+        border = BorderStroke(
+            1.dp,
+            Color(0xFF284866)
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(18.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Start
+            ) {
+                Text(
+                    text = "> R2-D2 BODY STATE",
+                    color = Color(0xFF64C8FF),
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Canvas drawing representing the body controls
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(220.dp)
+                    .background(
+                        Brush.radialGradient(
+                            colors = listOf(Color(0xFF151D38), Color(0xFF080C18))
+                        ),
+                        RoundedCornerShape(12.dp)
+                    )
+                    .border(2.dp, Color(0xFF2B4C85).copy(alpha = 0.6f), RoundedCornerShape(12.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Canvas(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(12.dp)
+                        .pointerInput(Unit) {
+                            detectTapGestures { offset ->
+                                val w = size.width.toFloat()
+                                val h = size.height.toFloat()
+                                val cx = w / 2f
+                                val cy = h * 0.5f
+                                val x = offset.x
+                                val y = offset.y
+
+                                val isLeft = x in (cx - 60.dp.toPx())..(cx - 30.dp.toPx()) &&
+                                        y in (cy - 90.dp.toPx())..(cy - 10.dp.toPx())
+                                val isRight = x in (cx + 30.dp.toPx())..(cx + 60.dp.toPx()) &&
+                                        y in (cy - 90.dp.toPx())..(cy - 10.dp.toPx())
+                                val isCharge = x in (cx - 28.dp.toPx())..(cx - 2.dp.toPx()) &&
+                                        y in (cy - 35.dp.toPx())..(cy - 5.dp.toPx())
+                                val isData = x in (cx + 2.dp.toPx())..(cx + 28.dp.toPx()) &&
+                                        y in (cy - 35.dp.toPx())..(cy - 5.dp.toPx())
+
+                                if (isLeft) onGripperToggle(!gripperOpen)
+                                else if (isRight) onInterfaceToggle(!interfaceOpen)
+                                else if (isCharge) onChargeToggle(!chargeOpen)
+                                else if (isData) onDataToggle(!dataOpen)
+                            }
+                        }
+                ) {
+                    val w = size.width
+                    val h = size.height
+                    val cx = w / 2f
+                    val cy = h * 0.5f
+
+                    val bodyWidth = 110.dp.toPx()
+                    val bodyHeight = 160.dp.toPx()
+
+                    // Draw main body cylindrical shape (white with silver borders)
+                    val bodyRect = androidx.compose.ui.geometry.Rect(
+                        cx - bodyWidth / 2f,
+                        cy - bodyHeight / 2f,
+                        cx + bodyWidth / 2f,
+                        cy + bodyHeight / 2f
+                    )
+                    
+                    // Draw outer body fill
+                    drawRoundRect(
+                        brush = Brush.linearGradient(
+                            colors = listOf(Color(0xFFEAEDF2), Color(0xFFD0D7E3))
+                        ),
+                        topLeft = bodyRect.topLeft,
+                        size = bodyRect.size,
+                        cornerRadius = androidx.compose.ui.geometry.CornerRadius(16.dp.toPx(), 16.dp.toPx())
+                    )
+                    
+                    // Body outline
+                    drawRoundRect(
+                        color = Color(0xFF4D5A6E),
+                        topLeft = bodyRect.topLeft,
+                        size = bodyRect.size,
+                        cornerRadius = androidx.compose.ui.geometry.CornerRadius(16.dp.toPx(), 16.dp.toPx()),
+                        style = Stroke(width = 3.dp.toPx())
+                    )
+
+                    // Draw body panel details
+                    drawRect(
+                        color = Color(0xFF0D3C94),
+                        topLeft = Offset(cx - 30.dp.toPx(), cy - 75.dp.toPx()),
+                        size = androidx.compose.ui.geometry.Size(60.dp.toPx(), 14.dp.toPx())
+                    )
+                    
+                    // 1. Left Large Panel (Gripper)
+                    val leftPanelX = cx - 45.dp.toPx()
+                    val leftPanelY = cy - 50.dp.toPx()
+                    val leftPanelW = 16.dp.toPx()
+                    val leftPanelH = 65.dp.toPx()
+
+                    if (gripperOpen) {
+                        // Swing door 1 open to the left
+                        val doorPath = androidx.compose.ui.graphics.Path().apply {
+                            moveTo(leftPanelX, leftPanelY)
+                            lineTo(leftPanelX - 18.dp.toPx(), leftPanelY - 5.dp.toPx())
+                            lineTo(leftPanelX - 18.dp.toPx(), leftPanelY + leftPanelH + 5.dp.toPx())
+                            lineTo(leftPanelX, leftPanelY + leftPanelH)
+                            close()
+                        }
+                        drawPath(path = doorPath, color = Color(0xFFB8C2D1))
+                        drawPath(path = doorPath, color = Color(0xFF4D5A6E), style = Stroke(width = 1.5.dp.toPx()))
+
+                        // Draw deployed Gripper Arm (3)
+                        drawLine(
+                            color = Color(0xFF738299),
+                            start = Offset(leftPanelX + leftPanelW/2f, leftPanelY + 10.dp.toPx()),
+                            end = Offset(leftPanelX - 12.dp.toPx(), leftPanelY + 35.dp.toPx()),
+                            strokeWidth = 4.dp.toPx()
+                        )
+                        // Claw hook details
+                        drawCircle(
+                            color = Color(0xFF222222),
+                            radius = 4.dp.toPx(),
+                            center = Offset(leftPanelX - 12.dp.toPx(), leftPanelY + 35.dp.toPx())
+                        )
+                    } else {
+                        // Closed door
+                        drawRect(
+                            color = Color(0xFF0D3C94),
+                            topLeft = Offset(leftPanelX, leftPanelY),
+                            size = androidx.compose.ui.geometry.Size(leftPanelW, leftPanelH)
+                        )
+                        drawRect(
+                            color = Color(0xFF4D5A6E),
+                            topLeft = Offset(leftPanelX, leftPanelY),
+                            size = androidx.compose.ui.geometry.Size(leftPanelW, leftPanelH),
+                            style = Stroke(width = 1.5.dp.toPx())
+                        )
+                    }
+
+                    // 2. Right Large Panel (Interface Arm)
+                    val rightPanelX = cx + 29.dp.toPx()
+                    val rightPanelY = cy - 50.dp.toPx()
+                    val rightPanelW = 16.dp.toPx()
+                    val rightPanelH = 65.dp.toPx()
+
+                    if (interfaceOpen) {
+                        // Swing door 5 open to the right
+                        val doorPath = androidx.compose.ui.graphics.Path().apply {
+                            moveTo(rightPanelX + rightPanelW, rightPanelY)
+                            lineTo(rightPanelX + rightPanelW + 18.dp.toPx(), rightPanelY - 5.dp.toPx())
+                            lineTo(rightPanelX + rightPanelW + 18.dp.toPx(), rightPanelY + rightPanelH + 5.dp.toPx())
+                            lineTo(rightPanelX + rightPanelW, rightPanelY + rightPanelH)
+                            close()
+                        }
+                        drawPath(path = doorPath, color = Color(0xFFB8C2D1))
+                        drawPath(path = doorPath, color = Color(0xFF4D5A6E), style = Stroke(width = 1.5.dp.toPx()))
+
+                        // Draw deployed Interface Arm (8)
+                        drawLine(
+                            color = Color(0xFF738299),
+                            start = Offset(rightPanelX + rightPanelW/2f, rightPanelY + 10.dp.toPx()),
+                            end = Offset(rightPanelX + rightPanelW + 12.dp.toPx(), rightPanelY + 40.dp.toPx()),
+                            strokeWidth = 3.dp.toPx()
+                        )
+                        drawCircle(
+                            color = Color(0xFF00FF99),
+                            radius = 3.dp.toPx(),
+                            center = Offset(rightPanelX + rightPanelW + 12.dp.toPx(), rightPanelY + 40.dp.toPx())
+                        )
+                    } else {
+                        // Closed door
+                        drawRect(
+                            color = Color(0xFF0D3C94),
+                            topLeft = Offset(rightPanelX, rightPanelY),
+                            size = androidx.compose.ui.geometry.Size(rightPanelW, rightPanelH)
+                        )
+                        drawRect(
+                            color = Color(0xFF4D5A6E),
+                            topLeft = Offset(rightPanelX, rightPanelY),
+                            size = androidx.compose.ui.geometry.Size(rightPanelW, rightPanelH),
+                            style = Stroke(width = 1.5.dp.toPx())
+                        )
+                    }
+
+                    // 3. Charge Door (2) & Interior (4)
+                    val chargeX = cx - 22.dp.toPx()
+                    val chargeY = cy - 25.dp.toPx()
+                    val chargeW = 18.dp.toPx()
+                    val chargeH = 20.dp.toPx()
+
+                    if (chargeOpen) {
+                        // Draw slot background (4)
+                        drawRect(
+                            color = Color(0xFF111111),
+                            topLeft = Offset(chargeX, chargeY),
+                            size = androidx.compose.ui.geometry.Size(chargeW, chargeH)
+                        )
+                        // Red LEDs
+                        drawCircle(color = Color(0xFFFF0022), radius = 2.dp.toPx(), center = Offset(chargeX + 5.dp.toPx(), chargeY + 5.dp.toPx()))
+                        drawCircle(color = Color(0xFFFF0022), radius = 2.dp.toPx(), center = Offset(chargeX + 5.dp.toPx(), chargeY + 12.dp.toPx()))
+                        // USB ports
+                        drawRect(color = Color(0xFF738299), topLeft = Offset(chargeX + 10.dp.toPx(), chargeY + 4.dp.toPx()), size = androidx.compose.ui.geometry.Size(6.dp.toPx(), 4.dp.toPx()))
+                        drawRect(color = Color(0xFF738299), topLeft = Offset(chargeX + 10.dp.toPx(), chargeY + 11.dp.toPx()), size = androidx.compose.ui.geometry.Size(6.dp.toPx(), 4.dp.toPx()))
+
+                        // Swung door (2)
+                        val doorPath = androidx.compose.ui.graphics.Path().apply {
+                            moveTo(chargeX, chargeY)
+                            lineTo(chargeX - 12.dp.toPx(), chargeY - 2.dp.toPx())
+                            lineTo(chargeX - 12.dp.toPx(), chargeY + chargeH + 2.dp.toPx())
+                            lineTo(chargeX, chargeY + chargeH)
+                            close()
+                        }
+                        drawPath(path = doorPath, color = Color(0xFFB8C2D1))
+                        drawPath(path = doorPath, color = Color(0xFF4D5A6E), style = Stroke(width = 1.dp.toPx()))
+                    } else {
+                        // Closed door
+                        drawRect(
+                            color = Color(0xFF9BA8B8),
+                            topLeft = Offset(chargeX, chargeY),
+                            size = androidx.compose.ui.geometry.Size(chargeW, chargeH)
+                        )
+                        drawRect(
+                            color = Color(0xFF4D5A6E),
+                            topLeft = Offset(chargeX, chargeY),
+                            size = androidx.compose.ui.geometry.Size(chargeW, chargeH),
+                            style = Stroke(width = 1.dp.toPx())
+                        )
+                    }
+
+                    // 4. Data Port / Diagnostic Door (6) & Matrix (7)
+                    val dataX = cx + 4.dp.toPx()
+                    val dataY = cy - 25.dp.toPx()
+                    val dataW = 18.dp.toPx()
+                    val dataH = 20.dp.toPx()
+
+                    if (dataOpen) {
+                        // Draw slot background (7)
+                        drawRect(
+                            color = Color(0xFF111111),
+                            topLeft = Offset(dataX, dataY),
+                            size = androidx.compose.ui.geometry.Size(dataW, dataH)
+                        )
+                        // Status Matrix indicator bars
+                        drawRect(color = Color(0xFFFFD54F), topLeft = Offset(dataX + 3.dp.toPx(), dataY + 3.dp.toPx()), size = androidx.compose.ui.geometry.Size(5.dp.toPx(), 3.dp.toPx()))
+                        drawRect(color = Color(0xFF00FF99), topLeft = Offset(dataX + 3.dp.toPx(), dataY + 8.dp.toPx()), size = androidx.compose.ui.geometry.Size(5.dp.toPx(), 3.dp.toPx()))
+                        drawRect(color = Color(0xFF0055FF), topLeft = Offset(dataX + 10.dp.toPx(), dataY + 5.dp.toPx()), size = androidx.compose.ui.geometry.Size(4.dp.toPx(), 10.dp.toPx()))
+
+                        // Swung door (6)
+                        val doorPath = androidx.compose.ui.graphics.Path().apply {
+                            moveTo(dataX + dataW, dataY)
+                            lineTo(dataX + dataW + 12.dp.toPx(), dataY - 2.dp.toPx())
+                            lineTo(dataX + dataW + 12.dp.toPx(), dataY + dataH + 2.dp.toPx())
+                            lineTo(dataX + dataW, dataY + dataH)
+                            close()
+                        }
+                        drawPath(path = doorPath, color = Color(0xFFB8C2D1))
+                        drawPath(path = doorPath, color = Color(0xFF4D5A6E), style = Stroke(width = 1.dp.toPx()))
+                    } else {
+                        // Closed door
+                        drawRect(
+                            color = Color(0xFF9BA8B8),
+                            topLeft = Offset(dataX, dataY),
+                            size = androidx.compose.ui.geometry.Size(dataW, dataH)
+                        )
+                        drawRect(
+                            color = Color(0xFF4D5A6E),
+                            topLeft = Offset(dataX, dataY),
+                            size = androidx.compose.ui.geometry.Size(dataW, dataH),
+                            style = Stroke(width = 1.dp.toPx())
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Body control buttons grid
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Button(
+                        onClick = { onGripperToggle(!gripperOpen) },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (gripperOpen) Color(0xFF1976D2) else Color(0xFF455A64)
+                        ),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(text = if (gripperOpen) "CLOSE GRIPPER" else "OPEN GRIPPER", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    }
+
+                    Button(
+                        onClick = { onInterfaceToggle(!interfaceOpen) },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (interfaceOpen) Color(0xFF1976D2) else Color(0xFF455A64)
+                        ),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(text = if (interfaceOpen) "CLOSE INTERFACE" else "OPEN INTERFACE", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Button(
+                        onClick = { onChargeToggle(!chargeOpen) },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (chargeOpen) Color(0xFF1976D2) else Color(0xFF455A64)
+                        ),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(text = if (chargeOpen) "CLOSE CHARGE" else "OPEN CHARGE", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    }
+
+                    Button(
+                        onClick = { onDataToggle(!dataOpen) },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (dataOpen) Color(0xFF1976D2) else Color(0xFF455A64)
+                        ),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(text = if (dataOpen) "CLOSE DATA PORT" else "OPEN DATA PORT", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
 fun R2Screen(
     bluetoothController: BluetoothController
 ) {
@@ -469,7 +840,7 @@ fun R2Screen(
     }
 
     // ==================================================
-    // HOISTED STATES FOR R2 DOME STATE
+    // HOISTED STATES FOR R2 DOME & BODY STATE
     // ==================================================
 
     val panelsOpen = remember {
@@ -490,6 +861,26 @@ fun R2Screen(
 
     val rearHoloOn = remember {
         mutableStateOf(true)
+    }
+
+    // ==================================================
+    // BODY STATES
+    // ==================================================
+
+    val gripperOpen = remember {
+        mutableStateOf(false)
+    }
+
+    val interfaceOpen = remember {
+        mutableStateOf(false)
+    }
+
+    val chargeOpen = remember {
+        mutableStateOf(false)
+    }
+
+    val dataOpen = remember {
+        mutableStateOf(false)
     }
 
     // ==================================================
@@ -689,6 +1080,56 @@ fun R2Screen(
                         bluetoothController.send("OPEN_TOP\n")
                     } else {
                         bluetoothController.send("CLOSE_TOP\n")
+                    }
+                }
+            )
+
+            Spacer(
+                modifier = Modifier.height(28.dp)
+            )
+
+            // ==================================================
+            // R2-D2 BODY STATE VISUALIZER
+            // ==================================================
+
+            R2BodyStateCard(
+                connectionState = bluetoothController.connectionState,
+                gripperOpen = gripperOpen.value,
+                interfaceOpen = interfaceOpen.value,
+                chargeOpen = chargeOpen.value,
+                dataOpen = dataOpen.value,
+                onGripperToggle = { open ->
+                    gripperOpen.value = open
+                    if (open) {
+                        bluetoothController.send("GRIPPER_OPEN\n")
+                        bluetoothController.send("ARM_A_DEPLOY\n")
+                    } else {
+                        bluetoothController.send("GRIPPER_CLOSE\n")
+                        bluetoothController.send("ARM_A_RETRACT\n")
+                    }
+                },
+                onInterfaceToggle = { open ->
+                    interfaceOpen.value = open
+                    if (open) {
+                        bluetoothController.send("ARM_B_DEPLOY\n")
+                    } else {
+                        bluetoothController.send("ARM_B_RETRACT\n")
+                    }
+                },
+                onChargeToggle = { open ->
+                    chargeOpen.value = open
+                    if (open) {
+                        bluetoothController.send("CHARGE_OPEN\n")
+                    } else {
+                        bluetoothController.send("CHARGE_CLOSE\n")
+                    }
+                },
+                onDataToggle = { open ->
+                    dataOpen.value = open
+                    if (open) {
+                        bluetoothController.send("DATA_OPEN\n")
+                    } else {
+                        bluetoothController.send("DATA_CLOSE\n")
                     }
                 }
             )
