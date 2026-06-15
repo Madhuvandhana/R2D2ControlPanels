@@ -510,14 +510,14 @@ fun R2BodyStateCard(
                                         y in (cy - 70.dp.toPx())..(cy - 58.dp.toPx())
                                 val isUtilB = x in (cx - 35.dp.toPx())..(cx + 35.dp.toPx()) &&
                                         y in (cy - 56.dp.toPx())..(cy - 44.dp.toPx())
-                                val isLeft = x in (cx - 48.dp.toPx())..(cx - 32.dp.toPx()) &&
+                                val isLeft = x in (cx - 58.dp.toPx())..(cx - 46.dp.toPx()) &&
                                         y in (cy - 35.dp.toPx())..(cy + 25.dp.toPx())
-                                val isRight = x in (cx + 32.dp.toPx())..(cx + 48.dp.toPx()) &&
+                                val isRight = x in (cx + 46.dp.toPx())..(cx + 58.dp.toPx()) &&
                                         y in (cy - 35.dp.toPx())..(cy + 25.dp.toPx())
-                                val isCharge = x in (cx - 48.dp.toPx())..(cx - 28.dp.toPx()) &&
-                                        y in (cy + 30.dp.toPx())..(cy + 50.dp.toPx())
-                                val isData = x in (cx + 28.dp.toPx())..(cx + 48.dp.toPx()) &&
-                                        y in (cy + 30.dp.toPx())..(cy + 50.dp.toPx())
+                                val isCharge = x in (cx - 40.dp.toPx())..(cx - 22.dp.toPx()) &&
+                                        y in (cy - 20.dp.toPx())..(cy)
+                                val isData = x in (cx + 22.dp.toPx())..(cx + 40.dp.toPx()) &&
+                                        y in (cy - 20.dp.toPx())..(cy)
 
                                 if (isUtilA) onUtilityArmAToggle(!utilityArmAOpen)
                                 else if (isUtilB) onUtilityArmBToggle(!utilityArmBOpen)
@@ -533,7 +533,7 @@ fun R2BodyStateCard(
                     val cx = w / 2f
                     val cy = h * 0.5f
 
-                    val bodyWidth = 110.dp.toPx()
+                    val bodyWidth = 130.dp.toPx()
                     val bodyHeight = 160.dp.toPx()
 
                     // Draw main body cylindrical shape (white with silver borders)
@@ -663,7 +663,7 @@ fun R2BodyStateCard(
                     }
 
                     // 4. Left Large Panel (Gripper door)
-                    val leftPanelX = cx - 48.dp.toPx()
+                    val leftPanelX = cx - 58.dp.toPx()
                     val leftPanelY = cy - 35.dp.toPx()
                     val leftPanelW = 12.dp.toPx()
                     val leftPanelH = 60.dp.toPx()
@@ -703,7 +703,7 @@ fun R2BodyStateCard(
                     }
 
                     // 5. Right Large Panel (Interface door)
-                    val rightPanelX = cx + 36.dp.toPx()
+                    val rightPanelX = cx + 46.dp.toPx()
                     val rightPanelY = cy - 35.dp.toPx()
                     val rightPanelW = 12.dp.toPx()
                     val rightPanelH = 60.dp.toPx()
@@ -742,14 +742,14 @@ fun R2BodyStateCard(
                         )
                     }
 
-                    // 6. Charge Door (Left Column Bottom - 7)
-                    val chargeX = cx - 48.dp.toPx()
-                    val chargeY = cy + 30.dp.toPx()
-                    val chargeW = 20.dp.toPx()
+                    // 6. Charge Door (next to Gripper)
+                    val chargeX = cx - 40.dp.toPx()
+                    val chargeY = cy - 20.dp.toPx()
+                    val chargeW = 18.dp.toPx()
                     val chargeH = 20.dp.toPx()
 
                     if (chargeOpen) {
-                        // Draw slot background
+                        // Draw slot background (4)
                         drawRect(
                             color = Color(0xFF111111),
                             topLeft = Offset(chargeX, chargeY),
@@ -762,11 +762,11 @@ fun R2BodyStateCard(
                         drawRect(color = Color(0xFF738299), topLeft = Offset(chargeX + 10.dp.toPx(), chargeY + 4.dp.toPx()), size = androidx.compose.ui.geometry.Size(6.dp.toPx(), 4.dp.toPx()))
                         drawRect(color = Color(0xFF738299), topLeft = Offset(chargeX + 10.dp.toPx(), chargeY + 11.dp.toPx()), size = androidx.compose.ui.geometry.Size(6.dp.toPx(), 4.dp.toPx()))
 
-                        // Swung door (7)
+                        // Swung door (2)
                         val doorPath = androidx.compose.ui.graphics.Path().apply {
                             moveTo(chargeX, chargeY)
-                            lineTo(chargeX - 10.dp.toPx(), chargeY - 2.dp.toPx())
-                            lineTo(chargeX - 10.dp.toPx(), chargeY + chargeH + 2.dp.toPx())
+                            lineTo(chargeX - 12.dp.toPx(), chargeY - 2.dp.toPx())
+                            lineTo(chargeX - 12.dp.toPx(), chargeY + chargeH + 2.dp.toPx())
                             lineTo(chargeX, chargeY + chargeH)
                             close()
                         }
@@ -787,10 +787,10 @@ fun R2BodyStateCard(
                         )
                     }
 
-                    // 7. Data Port / Diagnostic Door (Right Column Bottom - 9)
-                    val dataX = cx + 28.dp.toPx()
-                    val dataY = cy + 30.dp.toPx()
-                    val dataW = 20.dp.toPx()
+                    // 7. Data Port / Diagnostic Door
+                    val dataX = cx + 22.dp.toPx()
+                    val dataY = cy - 20.dp.toPx()
+                    val dataW = 18.dp.toPx()
                     val dataH = 20.dp.toPx()
 
                     if (dataOpen) {
@@ -805,11 +805,11 @@ fun R2BodyStateCard(
                         drawRect(color = Color(0xFF00FF99), topLeft = Offset(dataX + 3.dp.toPx(), dataY + 8.dp.toPx()), size = androidx.compose.ui.geometry.Size(5.dp.toPx(), 3.dp.toPx()))
                         drawRect(color = Color(0xFF0055FF), topLeft = Offset(dataX + 10.dp.toPx(), dataY + 5.dp.toPx()), size = androidx.compose.ui.geometry.Size(4.dp.toPx(), 10.dp.toPx()))
 
-                        // Swung door (9)
+                        // Swung door (6)
                         val doorPath = androidx.compose.ui.graphics.Path().apply {
                             moveTo(dataX + dataW, dataY)
-                            lineTo(dataX + dataW + 10.dp.toPx(), dataY - 2.dp.toPx())
-                            lineTo(dataX + dataW + 10.dp.toPx(), dataY + dataH + 2.dp.toPx())
+                            lineTo(dataX + dataW + 12.dp.toPx(), dataY - 2.dp.toPx())
+                            lineTo(dataX + dataW + 12.dp.toPx(), dataY + dataH + 2.dp.toPx())
                             lineTo(dataX + dataW, dataY + dataH)
                             close()
                         }
