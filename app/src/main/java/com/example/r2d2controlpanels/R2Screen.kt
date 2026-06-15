@@ -60,7 +60,10 @@ fun R2DomeStateCard(
     rearLogicText: String,
     pan: Float,
     tilt: Float,
-    onPanelsToggle: (Boolean) -> Unit
+    onPanelsToggle: (Boolean) -> Unit,
+    onDomeLeftClick: () -> Unit,
+    onDomeRightClick: () -> Unit,
+    onDomeStopClick: () -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -396,6 +399,41 @@ fun R2DomeStateCard(
                     )
                 ) {
                     Text("CLOSE DOME", fontSize = 12.sp)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Dome Rotation Buttons Row
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Button(
+                    onClick = onDomeLeftClick,
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1976D2)),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text("DOME LEFT", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                }
+
+                Button(
+                    onClick = onDomeStopClick,
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F)),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text("DOME STOP", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                }
+
+                Button(
+                    onClick = onDomeRightClick,
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1976D2)),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text("DOME RIGHT", fontSize = 11.sp, fontWeight = FontWeight.Bold)
                 }
             }
 
@@ -1220,7 +1258,10 @@ fun R2Screen(
                     } else {
                         bluetoothController.send("CLOSE_TOP\n")
                     }
-                }
+                },
+                onDomeLeftClick = { bluetoothController.send("DOME_LEFT\n") },
+                onDomeRightClick = { bluetoothController.send("DOME_RIGHT\n") },
+                onDomeStopClick = { bluetoothController.send("DOME_STOP\n") }
             )
 
             Spacer(
