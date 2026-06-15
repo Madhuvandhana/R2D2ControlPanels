@@ -514,10 +514,10 @@ fun R2BodyStateCard(
                                         y in (cy - 35.dp.toPx())..(cy + 25.dp.toPx())
                                 val isRight = x in (cx + 32.dp.toPx())..(cx + 48.dp.toPx()) &&
                                         y in (cy - 35.dp.toPx())..(cy + 25.dp.toPx())
-                                val isCharge = x in (cx - 35.dp.toPx())..(cx - 15.dp.toPx()) &&
-                                        y in (cy + 35.dp.toPx())..(cy + 55.dp.toPx())
-                                val isData = x in (cx + 15.dp.toPx())..(cx + 35.dp.toPx()) &&
-                                        y in (cy + 35.dp.toPx())..(cy + 55.dp.toPx())
+                                val isCharge = x in (cx - 22.dp.toPx())..(cx - 4.dp.toPx()) &&
+                                        y in (cy - 25.dp.toPx())..(cy - 5.dp.toPx())
+                                val isData = x in (cx + 4.dp.toPx())..(cx + 22.dp.toPx()) &&
+                                        y in (cy - 25.dp.toPx())..(cy - 5.dp.toPx())
 
                                 if (isUtilA) onUtilityArmAToggle(!utilityArmAOpen)
                                 else if (isUtilB) onUtilityArmBToggle(!utilityArmBOpen)
@@ -742,56 +742,92 @@ fun R2BodyStateCard(
                         )
                     }
 
-                    // 6. Charge Door (Left Bottom - 7)
-                    val chargeX = cx - 35.dp.toPx()
-                    val chargeY = cy + 35.dp.toPx()
-                    val chargeW = 20.dp.toPx()
+                    // 6. Charge Door (2) & Interior (4)
+                    val chargeX = cx - 22.dp.toPx()
+                    val chargeY = cy - 25.dp.toPx()
+                    val chargeW = 18.dp.toPx()
                     val chargeH = 20.dp.toPx()
 
                     if (chargeOpen) {
-                        drawRect(color = Color(0xFF111111), topLeft = Offset(chargeX, chargeY), size = androidx.compose.ui.geometry.Size(chargeW, chargeH))
+                        // Draw slot background (4)
+                        drawRect(
+                            color = Color(0xFF111111),
+                            topLeft = Offset(chargeX, chargeY),
+                            size = androidx.compose.ui.geometry.Size(chargeW, chargeH)
+                        )
+                        // Red LEDs
                         drawCircle(color = Color(0xFFFF0022), radius = 2.dp.toPx(), center = Offset(chargeX + 5.dp.toPx(), chargeY + 5.dp.toPx()))
                         drawCircle(color = Color(0xFFFF0022), radius = 2.dp.toPx(), center = Offset(chargeX + 5.dp.toPx(), chargeY + 12.dp.toPx()))
+                        // USB ports
+                        drawRect(color = Color(0xFF738299), topLeft = Offset(chargeX + 10.dp.toPx(), chargeY + 4.dp.toPx()), size = androidx.compose.ui.geometry.Size(6.dp.toPx(), 4.dp.toPx()))
+                        drawRect(color = Color(0xFF738299), topLeft = Offset(chargeX + 10.dp.toPx(), chargeY + 11.dp.toPx()), size = androidx.compose.ui.geometry.Size(6.dp.toPx(), 4.dp.toPx()))
 
-                        // Swung door (7)
+                        // Swung door (2)
                         val doorPath = androidx.compose.ui.graphics.Path().apply {
                             moveTo(chargeX, chargeY)
-                            lineTo(chargeX - 10.dp.toPx(), chargeY - 2.dp.toPx())
-                            lineTo(chargeX - 10.dp.toPx(), chargeY + chargeH + 2.dp.toPx())
+                            lineTo(chargeX - 12.dp.toPx(), chargeY - 2.dp.toPx())
+                            lineTo(chargeX - 12.dp.toPx(), chargeY + chargeH + 2.dp.toPx())
                             lineTo(chargeX, chargeY + chargeH)
                             close()
                         }
                         drawPath(path = doorPath, color = Color(0xFFB8C2D1))
                         drawPath(path = doorPath, color = Color(0xFF4D5A6E), style = Stroke(width = 1.dp.toPx()))
                     } else {
-                        drawRect(color = Color(0xFF9BA8B8), topLeft = Offset(chargeX, chargeY), size = androidx.compose.ui.geometry.Size(chargeW, chargeH))
-                        drawRect(color = Color(0xFF4D5A6E), topLeft = Offset(chargeX, chargeY), size = androidx.compose.ui.geometry.Size(chargeW, chargeH), style = Stroke(width = 1.dp.toPx()))
+                        // Closed door
+                        drawRect(
+                            color = Color(0xFF9BA8B8),
+                            topLeft = Offset(chargeX, chargeY),
+                            size = androidx.compose.ui.geometry.Size(chargeW, chargeH)
+                        )
+                        drawRect(
+                            color = Color(0xFF4D5A6E),
+                            topLeft = Offset(chargeX, chargeY),
+                            size = androidx.compose.ui.geometry.Size(chargeW, chargeH),
+                            style = Stroke(width = 1.dp.toPx())
+                        )
                     }
 
-                    // 7. Data Port / Diagnostic Door (Right Bottom - 9)
-                    val dataX = cx + 15.dp.toPx()
-                    val dataY = cy + 35.dp.toPx()
-                    val dataW = 20.dp.toPx()
+                    // 7. Data Port / Diagnostic Door (6) & Matrix (7)
+                    val dataX = cx + 4.dp.toPx()
+                    val dataY = cy - 25.dp.toPx()
+                    val dataW = 18.dp.toPx()
                     val dataH = 20.dp.toPx()
 
                     if (dataOpen) {
-                        drawRect(color = Color(0xFF111111), topLeft = Offset(dataX, dataY), size = androidx.compose.ui.geometry.Size(dataW, dataH))
+                        // Draw slot background (7)
+                        drawRect(
+                            color = Color(0xFF111111),
+                            topLeft = Offset(dataX, dataY),
+                            size = androidx.compose.ui.geometry.Size(dataW, dataH)
+                        )
+                        // Status Matrix indicator bars
+                        drawRect(color = Color(0xFFFFD54F), topLeft = Offset(dataX + 3.dp.toPx(), dataY + 3.dp.toPx()), size = androidx.compose.ui.geometry.Size(5.dp.toPx(), 3.dp.toPx()))
                         drawRect(color = Color(0xFF00FF99), topLeft = Offset(dataX + 3.dp.toPx(), dataY + 8.dp.toPx()), size = androidx.compose.ui.geometry.Size(5.dp.toPx(), 3.dp.toPx()))
                         drawRect(color = Color(0xFF0055FF), topLeft = Offset(dataX + 10.dp.toPx(), dataY + 5.dp.toPx()), size = androidx.compose.ui.geometry.Size(4.dp.toPx(), 10.dp.toPx()))
 
-                        // Swung door (9)
+                        // Swung door (6)
                         val doorPath = androidx.compose.ui.graphics.Path().apply {
                             moveTo(dataX + dataW, dataY)
-                            lineTo(dataX + dataW + 10.dp.toPx(), dataY - 2.dp.toPx())
-                            lineTo(dataX + dataW + 10.dp.toPx(), dataY + dataH + 2.dp.toPx())
+                            lineTo(dataX + dataW + 12.dp.toPx(), dataY - 2.dp.toPx())
+                            lineTo(dataX + dataW + 12.dp.toPx(), dataY + dataH + 2.dp.toPx())
                             lineTo(dataX + dataW, dataY + dataH)
                             close()
                         }
                         drawPath(path = doorPath, color = Color(0xFFB8C2D1))
                         drawPath(path = doorPath, color = Color(0xFF4D5A6E), style = Stroke(width = 1.dp.toPx()))
                     } else {
-                        drawRect(color = Color(0xFF9BA8B8), topLeft = Offset(dataX, dataY), size = androidx.compose.ui.geometry.Size(dataW, dataH))
-                        drawRect(color = Color(0xFF4D5A6E), topLeft = Offset(dataX, dataY), size = androidx.compose.ui.geometry.Size(dataW, dataH), style = Stroke(width = 1.dp.toPx()))
+                        // Closed door
+                        drawRect(
+                            color = Color(0xFF9BA8B8),
+                            topLeft = Offset(dataX, dataY),
+                            size = androidx.compose.ui.geometry.Size(dataW, dataH)
+                        )
+                        drawRect(
+                            color = Color(0xFF4D5A6E),
+                            topLeft = Offset(dataX, dataY),
+                            size = androidx.compose.ui.geometry.Size(dataW, dataH),
+                            style = Stroke(width = 1.dp.toPx())
+                        )
                     }
 
                     // 8. Round Detail (Bottom Center - 8)
