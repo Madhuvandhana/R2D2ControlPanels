@@ -442,10 +442,14 @@ fun R2BodyStateCard(
     interfaceOpen: Boolean,
     chargeOpen: Boolean,
     dataOpen: Boolean,
+    utilityArmAOpen: Boolean,
+    utilityArmBOpen: Boolean,
     onGripperToggle: (Boolean) -> Unit,
     onInterfaceToggle: (Boolean) -> Unit,
     onChargeToggle: (Boolean) -> Unit,
-    onDataToggle: (Boolean) -> Unit
+    onDataToggle: (Boolean) -> Unit,
+    onUtilityArmAToggle: (Boolean) -> Unit,
+    onUtilityArmBToggle: (Boolean) -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -510,11 +514,17 @@ fun R2BodyStateCard(
                                         y in (cy - 35.dp.toPx())..(cy - 5.dp.toPx())
                                 val isData = x in (cx + 2.dp.toPx())..(cx + 28.dp.toPx()) &&
                                         y in (cy - 35.dp.toPx())..(cy - 5.dp.toPx())
+                                val isUtilA = x in (cx - 32.dp.toPx())..(cx - 10.dp.toPx()) &&
+                                        y in (cy + 25.dp.toPx())..(cy + 45.dp.toPx())
+                                val isUtilB = x in (cx + 10.dp.toPx())..(cx + 32.dp.toPx()) &&
+                                        y in (cy + 25.dp.toPx())..(cy + 45.dp.toPx())
 
                                 if (isLeft) onGripperToggle(!gripperOpen)
                                 else if (isRight) onInterfaceToggle(!interfaceOpen)
                                 else if (isCharge) onChargeToggle(!chargeOpen)
                                 else if (isData) onDataToggle(!dataOpen)
+                                else if (isUtilA) onUtilityArmAToggle(!utilityArmAOpen)
+                                else if (isUtilB) onUtilityArmBToggle(!utilityArmBOpen)
                             }
                         }
                 ) {
@@ -738,6 +748,84 @@ fun R2BodyStateCard(
                             style = Stroke(width = 1.dp.toPx())
                         )
                     }
+
+                    // 5. Utility Arm A (Left Bottom)
+                    val utilAX = cx - 32.dp.toPx()
+                    val utilAY = cy + 30.dp.toPx()
+                    val utilAW = 22.dp.toPx()
+                    val utilAH = 12.dp.toPx()
+
+                    if (utilityArmAOpen) {
+                        // Swung open Utility Arm A path
+                        val armPath = androidx.compose.ui.graphics.Path().apply {
+                            moveTo(utilAX, utilAY)
+                            lineTo(utilAX - 15.dp.toPx(), utilAY + 10.dp.toPx())
+                            lineTo(utilAX - 15.dp.toPx(), utilAY + utilAH + 10.dp.toPx())
+                            lineTo(utilAX, utilAY + utilAH)
+                            close()
+                        }
+                        drawPath(path = armPath, color = Color(0xFFB8C2D1))
+                        drawPath(path = armPath, color = Color(0xFF4D5A6E), style = Stroke(width = 1.dp.toPx()))
+                        // Deployed tool extension
+                        drawLine(
+                            color = Color(0xFF738299),
+                            start = Offset(utilAX - 15.dp.toPx(), utilAY + utilAH / 2f + 5.dp.toPx()),
+                            end = Offset(utilAX - 30.dp.toPx(), utilAY + utilAH / 2f + 10.dp.toPx()),
+                            strokeWidth = 3.dp.toPx()
+                        )
+                    } else {
+                        // Closed
+                        drawRect(
+                            color = Color(0xFF0D3C94),
+                            topLeft = Offset(utilAX, utilAY),
+                            size = androidx.compose.ui.geometry.Size(utilAW, utilAH)
+                        )
+                        drawRect(
+                            color = Color(0xFF4D5A6E),
+                            topLeft = Offset(utilAX, utilAY),
+                            size = androidx.compose.ui.geometry.Size(utilAW, utilAH),
+                            style = Stroke(width = 1.dp.toPx())
+                        )
+                    }
+
+                    // 6. Utility Arm B (Right Bottom)
+                    val utilBX = cx + 10.dp.toPx()
+                    val utilBY = cy + 30.dp.toPx()
+                    val utilBW = 22.dp.toPx()
+                    val utilBH = 12.dp.toPx()
+
+                    if (utilityArmBOpen) {
+                        // Swung open Utility Arm B path
+                        val armPath = androidx.compose.ui.graphics.Path().apply {
+                            moveTo(utilBX + utilBW, utilBY)
+                            lineTo(utilBX + utilBW + 15.dp.toPx(), utilBY + 10.dp.toPx())
+                            lineTo(utilBX + utilBW + 15.dp.toPx(), utilBY + utilBH + 10.dp.toPx())
+                            lineTo(utilBX + utilBW, utilBY + utilBH)
+                            close()
+                        }
+                        drawPath(path = armPath, color = Color(0xFFB8C2D1))
+                        drawPath(path = armPath, color = Color(0xFF4D5A6E), style = Stroke(width = 1.dp.toPx()))
+                        // Deployed tool extension
+                        drawLine(
+                            color = Color(0xFF738299),
+                            start = Offset(utilBX + utilBW + 15.dp.toPx(), utilBY + utilBH / 2f + 5.dp.toPx()),
+                            end = Offset(utilBX + utilBW + 30.dp.toPx(), utilBY + utilBH / 2f + 10.dp.toPx()),
+                            strokeWidth = 3.dp.toPx()
+                        )
+                    } else {
+                        // Closed
+                        drawRect(
+                            color = Color(0xFF0D3C94),
+                            topLeft = Offset(utilBX, utilBY),
+                            size = androidx.compose.ui.geometry.Size(utilBW, utilBH)
+                        )
+                        drawRect(
+                            color = Color(0xFF4D5A6E),
+                            topLeft = Offset(utilBX, utilBY),
+                            size = androidx.compose.ui.geometry.Size(utilBW, utilBH),
+                            style = Stroke(width = 1.dp.toPx())
+                        )
+                    }
                 }
             }
 
@@ -799,6 +887,33 @@ fun R2BodyStateCard(
                         shape = RoundedCornerShape(8.dp)
                     ) {
                         Text(text = if (dataOpen) "CLOSE DATA PORT" else "OPEN DATA PORT", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Button(
+                        onClick = { onUtilityArmAToggle(!utilityArmAOpen) },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (utilityArmAOpen) Color(0xFF1976D2) else Color(0xFF455A64)
+                        ),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(text = if (utilityArmAOpen) "RETRACT UTIL ARM A" else "DEPLOY UTIL ARM A", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    }
+
+                    Button(
+                        onClick = { onUtilityArmBToggle(!utilityArmBOpen) },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (utilityArmBOpen) Color(0xFF1976D2) else Color(0xFF455A64)
+                        ),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(text = if (utilityArmBOpen) "RETRACT UTIL ARM B" else "DEPLOY UTIL ARM B", fontSize = 11.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -880,6 +995,14 @@ fun R2Screen(
     }
 
     val dataOpen = remember {
+        mutableStateOf(false)
+    }
+
+    val utilityArmAOpen = remember {
+        mutableStateOf(false)
+    }
+
+    val utilityArmBOpen = remember {
         mutableStateOf(false)
     }
 
@@ -1098,22 +1221,22 @@ fun R2Screen(
                 interfaceOpen = interfaceOpen.value,
                 chargeOpen = chargeOpen.value,
                 dataOpen = dataOpen.value,
+                utilityArmAOpen = utilityArmAOpen.value,
+                utilityArmBOpen = utilityArmBOpen.value,
                 onGripperToggle = { open ->
                     gripperOpen.value = open
                     if (open) {
                         bluetoothController.send("GRIPPER_OPEN\n")
-                        bluetoothController.send("ARM_A_DEPLOY\n")
                     } else {
                         bluetoothController.send("GRIPPER_CLOSE\n")
-                        bluetoothController.send("ARM_A_RETRACT\n")
                     }
                 },
                 onInterfaceToggle = { open ->
                     interfaceOpen.value = open
                     if (open) {
-                        bluetoothController.send("ARM_B_DEPLOY\n")
+                        bluetoothController.send("INTERFACE_OPEN\n")
                     } else {
-                        bluetoothController.send("ARM_B_RETRACT\n")
+                        bluetoothController.send("INTERFACE_CLOSE\n")
                     }
                 },
                 onChargeToggle = { open ->
@@ -1130,6 +1253,22 @@ fun R2Screen(
                         bluetoothController.send("DATA_OPEN\n")
                     } else {
                         bluetoothController.send("DATA_CLOSE\n")
+                    }
+                },
+                onUtilityArmAToggle = { open ->
+                    utilityArmAOpen.value = open
+                    if (open) {
+                        bluetoothController.send("ARM_A_DEPLOY\n")
+                    } else {
+                        bluetoothController.send("ARM_A_RETRACT\n")
+                    }
+                },
+                onUtilityArmBToggle = { open ->
+                    utilityArmBOpen.value = open
+                    if (open) {
+                        bluetoothController.send("ARM_B_DEPLOY\n")
+                    } else {
+                        bluetoothController.send("ARM_B_RETRACT\n")
                     }
                 }
             )
