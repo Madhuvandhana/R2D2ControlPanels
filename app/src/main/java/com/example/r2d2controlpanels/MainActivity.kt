@@ -31,9 +31,14 @@ class MainActivity : ComponentActivity() {
     // YOUR ESP32 MAC ADDRESS
     // ==================================================
 
+    // TODO: Uncomment this after bench test
     private val esp32Address =
 
         "B0:A7:32:14:D5:4A"
+
+//        private val esp32Address =
+//
+//        "88:F1:55:31:14:96"
 
     // Replace with YOUR real MAC address
 

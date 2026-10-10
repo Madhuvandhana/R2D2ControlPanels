@@ -31,6 +31,8 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
@@ -63,7 +65,9 @@ fun R2DomeStateCard(
     onPanelsToggle: (Boolean) -> Unit,
     onDomeLeftClick: () -> Unit,
     onDomeRightClick: () -> Unit,
-    onDomeStopClick: () -> Unit
+    onDomeStopClick: () -> Unit,
+    onDomeHomeClick: () -> Unit,
+    onStartJetsonClick: () -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -434,6 +438,31 @@ fun R2DomeStateCard(
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Text("DOME RIGHT", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Button(
+                    onClick = onDomeHomeClick,
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00B0FF)),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text("DOME HOME", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                }
+
+                Button(
+                    onClick = onStartJetsonClick,
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text("START JETSON", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White)
                 }
             }
 
@@ -976,6 +1005,556 @@ fun R2BodyStateCard(
 }
 
 @Composable
+fun R2SoundStateCard(
+    connectionState: BluetoothState,
+    soundVolume: Float,
+    onVolumeChange: (Float) -> Unit,
+    onVolUpClick: () -> Unit,
+    onVolDownClick: () -> Unit,
+    onSoundCommand: (String) -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFF101923)
+        ),
+        border = BorderStroke(
+            1.dp,
+            Color(0xFF284866)
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(18.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "> R2-D2 SOUND & AUDIO SYSTEM",
+                    color = Color(0xFF64C8FF),
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "MP3 TRIGGER",
+                    color = Color(0xFF00FF99),
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // ==================================================
+            // MASTER VOLUME & STOP CONTROLS
+            // ==================================================
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF0A121D)),
+                border = BorderStroke(1.dp, Color(0xFF1D364D))
+            ) {
+                Column(modifier = Modifier.padding(14.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "VOLUME CONTROL (${soundVolume.toInt()}%)",
+                            color = Color(0xFF88C0E8),
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = if (soundVolume >= 100f) "MAX VOL" else if (soundVolume <= 0f) "MUTE" else "${soundVolume.toInt()}%",
+                            color = Color(0xFF00E5FF),
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Slider(
+                            value = soundVolume,
+                            onValueChange = { newPct ->
+                                onVolumeChange(newPct)
+                            },
+                            valueRange = 0f..100f,
+                            modifier = Modifier.weight(1f),
+                            colors = SliderDefaults.colors(
+                                thumbColor = Color(0xFF00E5FF),
+                                activeTrackColor = Color(0xFF00A3E0),
+                                inactiveTrackColor = Color(0xFF1E3A52)
+                            )
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Button(
+                            onClick = { onVolUpClick() },
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E3D59)),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Text("VOL +", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        }
+
+                        Button(
+                            onClick = { onVolDownClick() },
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E3D59)),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Text("VOL -", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        }
+
+                        Button(
+                            onClick = { onSoundCommand("STOP_AUDIO") },
+                            modifier = Modifier.weight(1.2f),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF8B0000)),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Text("STOP AUDIO", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // ==================================================
+            // MUSIC TRACKS
+            // ==================================================
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Start
+            ) {
+                Text(
+                    text = "STAR WARS MUSIC TRACKS",
+                    color = Color(0xFFFFD54F),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            val musicTracks = listOf(
+                "STAR_WARS" to "Main Theme 🎵",
+                "DISCO" to "SW Disco 🕺",
+                "MARCH" to "Imperial March ⚔️",
+                "CANTINA" to "Cantina Band 🎷"
+            )
+
+            val musicRows = musicTracks.chunked(2)
+            musicRows.forEach { rowTracks ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    rowTracks.forEach { (cmd, label) ->
+                        Button(
+                            onClick = { onSoundCommand(cmd) },
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2A2000)),
+                            border = BorderStroke(1.dp, Color(0xFFFFB300)),
+                            shape = RoundedCornerShape(10.dp)
+                        ) {
+                            Text(
+                                text = label,
+                                color = Color(0xFFFFE082),
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // ==================================================
+            // ASTROMECH EMOTIONS & SOUNDS
+            // ==================================================
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Start
+            ) {
+                Text(
+                    text = "EMOTIONS & ASTROMECH SOUNDS",
+                    color = Color(0xFF64C8FF),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            val soundEffects = listOf(
+                "GREETING" to "Greeting 👋",
+                "HAPPY" to "Happy 😊",
+                "PROUD" to "Proud 🌟",
+                "CELEBRATING" to "Celebrating 🎉",
+                "AGREEMENT" to "Agreement 👍",
+                "ACKNOWLEDGED" to "Acknowledged 👌",
+                "SINGING" to "Singing 🎶",
+                "CURIOSITY" to "Curiosity 🤔",
+                "THINKING" to "Thinking 💭",
+                "INVESTIGATING" to "Investigating 🔍",
+                "SEARCHING" to "Searching 🔎",
+                "FOUND" to "Found 🎯",
+                "SCANNING" to "Scanning 📡",
+                "LISTENING" to "Listening 👂",
+                "CONFUSION" to "Confusion ❓",
+                "DISBELIEF" to "Disbelief 😲",
+                "CONCERNED" to "Concerned 😟",
+                "WARNING" to "Warning ⚠️",
+                "SCARED" to "Scared 😱",
+                "EMBARRASSED" to "Embarrassed 😳",
+                "TEASING" to "Teasing 😜",
+                "DRIVING" to "Driving 🚗",
+                "DOCKING" to "Docking ⚓",
+                "SLEEP" to "Sleep 😴",
+                "WAKE" to "Wake Up ⏰",
+                "SCREAM" to "Scream"
+            )
+
+            val soundRows = soundEffects.chunked(3)
+            soundRows.forEach { rowSounds ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 3.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    rowSounds.forEach { (cmd, label) ->
+                        Button(
+                            onClick = { onSoundCommand(cmd) },
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF132235)),
+                            border = BorderStroke(1.dp, Color(0xFF1E4970)),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Text(
+                                text = label,
+                                color = Color(0xFFB0E2FF),
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                maxLines = 1
+                            )
+                        }
+                    }
+                    if (rowSounds.size < 3) {
+                        repeat(3 - rowSounds.size) {
+                            Spacer(modifier = Modifier.weight(1f))
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun R2DriveStateCard(
+    connectionState: BluetoothState,
+    onDriveCommand: (String) -> Unit
+) {
+    val leftSpeed = remember { mutableFloatStateOf(0f) }
+    val rightSpeed = remember { mutableFloatStateOf(0f) }
+
+    // Joystick position states
+    val driveKnobX = remember { mutableFloatStateOf(0f) }
+    val driveKnobY = remember { mutableFloatStateOf(0f) }
+
+    // Speed lock states
+    val lockSpeed = remember { mutableStateOf(false) }
+    val lockedSpeedValue = remember { mutableFloatStateOf(60f) }
+
+    // Throttling state to prevent spamming Bluetooth
+    val lastSentLeft = remember { mutableStateOf(0) }
+    val lastSentRight = remember { mutableStateOf(0) }
+    val lastSendTime = remember { mutableStateOf(0L) }
+
+    // Track which D-PAD buttons are currently held down for combined controls (multi-touch support)
+    val isForwardPressed = remember { mutableStateOf(false) }
+    val isReversePressed = remember { mutableStateOf(false) }
+    val isLeftPressed = remember { mutableStateOf(false) }
+    val isRightPressed = remember { mutableStateOf(false) }
+
+    fun updateSpeeds() {
+        val sp = lockedSpeedValue.floatValue.toInt()
+        val fwd = if (isForwardPressed.value) 1 else if (isReversePressed.value) -1 else 0
+        val trn = if (isLeftPressed.value) 1 else if (isRightPressed.value) -1 else 0
+
+        if (fwd == 0 && trn == 0) {
+            leftSpeed.floatValue = 0f
+            rightSpeed.floatValue = 0f
+            onDriveCommand("STOP")
+        } else {
+            val l: Int
+            val r: Int
+
+            if (fwd > 0) {
+                // Forward Curve Turning: Dampen inner wheel to 40% speed
+                if (trn > 0) { // Forward Left
+                    l = sp
+                    r = (sp * 0.4f).toInt()
+                } else if (trn < 0) { // Forward Right
+                    l = (sp * 0.4f).toInt()
+                    r = sp
+                } else { // Forward straight
+                    l = sp
+                    r = sp
+                }
+            } else if (fwd < 0) {
+                // Reverse Curve Turning: Dampen inner wheel to 40% speed
+                if (trn > 0) { // Reverse Left
+                    l = -sp
+                    r = -(sp * 0.4f).toInt()
+                } else if (trn < 0) { // Reverse Right
+                    l = -(sp * 0.4f).toInt()
+                    r = -sp
+                } else { // Reverse straight
+                    l = -sp
+                    r = -sp
+                }
+            } else {
+                // Spin in place (trn != 0)
+                if (trn > 0) { // Spin Left (left forward, right reverse)
+                    l = sp
+                    r = -sp
+                } else { // Spin Right (left reverse, right forward)
+                    l = -sp
+                    r = sp
+                }
+            }
+
+            leftSpeed.floatValue = l.toFloat()
+            rightSpeed.floatValue = r.toFloat()
+            onDriveCommand("DRIVE:$l,$r")
+        }
+    }
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFF101923)
+        ),
+        border = BorderStroke(
+            1.dp,
+            Color(0xFF284866)
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(18.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "> R2-D2 DRIVE CONTROL",
+                    color = Color(0xFF64C8FF),
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "SABERTOOTH",
+                    color = Color(0xFF00FF99),
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // EMERGENCY STOP BUTTON
+            Button(
+                onClick = {
+                    isForwardPressed.value = false
+                    isReversePressed.value = false
+                    isLeftPressed.value = false
+                    isRightPressed.value = false
+                    leftSpeed.floatValue = 0f
+                    rightSpeed.floatValue = 0f
+                    driveKnobX.floatValue = 0f
+                    driveKnobY.floatValue = 0f
+                    onDriveCommand("STOP")
+                },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F)),
+                shape = RoundedCornerShape(10.dp),
+                border = BorderStroke(1.5.dp, Color(0xFFFF8A80))
+            ) {
+                Text(
+                    text = "⚠ EMERGENCY STOP ⚠",
+                    color = Color.White,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Black
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // SPEED CONTROLLER SLIDER
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "DRIVE SPEED: ${lockedSpeedValue.floatValue.toInt()}",
+                    color = Color(0xFF64C8FF),
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.width(120.dp)
+                )
+                Slider(
+                    value = lockedSpeedValue.floatValue,
+                    onValueChange = { lockedSpeedValue.floatValue = it },
+                    valueRange = 25f..127f,
+                    modifier = Modifier.weight(1f),
+                    colors = SliderDefaults.colors(
+                        thumbColor = Color(0xFF00E5FF),
+                        activeTrackColor = Color(0xFF00A3E0)
+                    )
+                )
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // HOLD-TO-RUN DIRECTIONAL BUTTONS (D-PAD)
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                // FORWARD
+                Box(
+                    modifier = Modifier
+                        .size(76.dp)
+                        .background(Color(0xFF13263D), CircleShape)
+                        .border(2.dp, Color(0xFF00E5FF), CircleShape)
+                        .pointerInput(lockedSpeedValue.floatValue) {
+                            detectTapGestures(
+                                onPress = {
+                                    isForwardPressed.value = true
+                                    updateSpeeds()
+                                    tryAwaitRelease()
+                                    isForwardPressed.value = false
+                                    updateSpeeds()
+                                }
+                            )
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("▲", color = Color.White, fontSize = 26.sp, fontWeight = FontWeight.Bold)
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // LEFT TURN (Spin in place or Curve)
+                    Box(
+                        modifier = Modifier
+                            .size(76.dp)
+                            .background(Color(0xFF13263D), CircleShape)
+                            .border(2.dp, Color(0xFF00E5FF), CircleShape)
+                            .pointerInput(lockedSpeedValue.floatValue) {
+                                detectTapGestures(
+                                    onPress = {
+                                        isLeftPressed.value = true
+                                        updateSpeeds()
+                                        tryAwaitRelease()
+                                        isLeftPressed.value = false
+                                        updateSpeeds()
+                                    }
+                                )
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("◀", color = Color.White, fontSize = 26.sp, fontWeight = FontWeight.Bold)
+                    }
+
+                    Spacer(modifier = Modifier.width(48.dp))
+
+                    // RIGHT TURN (Spin in place or Curve)
+                    Box(
+                        modifier = Modifier
+                            .size(76.dp)
+                            .background(Color(0xFF13263D), CircleShape)
+                            .border(2.dp, Color(0xFF00E5FF), CircleShape)
+                            .pointerInput(lockedSpeedValue.floatValue) {
+                                detectTapGestures(
+                                    onPress = {
+                                        isRightPressed.value = true
+                                        updateSpeeds()
+                                        tryAwaitRelease()
+                                        isRightPressed.value = false
+                                        updateSpeeds()
+                                    }
+                                )
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("▶", color = Color.White, fontSize = 26.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // REVERSE
+                Box(
+                    modifier = Modifier
+                        .size(76.dp)
+                        .background(Color(0xFF13263D), CircleShape)
+                        .border(2.dp, Color(0xFF00E5FF), CircleShape)
+                        .pointerInput(lockedSpeedValue.floatValue) {
+                            detectTapGestures(
+                                onPress = {
+                                    isReversePressed.value = true
+                                    updateSpeeds()
+                                    tryAwaitRelease()
+                                    isReversePressed.value = false
+                                    updateSpeeds()
+                                }
+                            )
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("▼", color = Color.White, fontSize = 26.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+    }
+}
+
+@Composable
 fun R2Screen(
     bluetoothController: BluetoothController
 ) {
@@ -1058,6 +1637,10 @@ fun R2Screen(
 
     val utilityArmBOpen = remember {
         mutableStateOf(false)
+    }
+
+    val soundVolume = remember {
+        mutableFloatStateOf(80f)
     }
 
     // ==================================================
@@ -1261,7 +1844,9 @@ fun R2Screen(
                 },
                 onDomeLeftClick = { bluetoothController.send("DOME_LEFT\n") },
                 onDomeRightClick = { bluetoothController.send("DOME_RIGHT\n") },
-                onDomeStopClick = { bluetoothController.send("DOME_STOP\n") }
+                onDomeStopClick = { bluetoothController.send("DOME_STOP\n") },
+                onDomeHomeClick = { bluetoothController.send("DOME_HOME\n") },
+                onStartJetsonClick = { bluetoothController.send("START_JETSON\n") }
             )
 
             Spacer(
@@ -1327,6 +1912,51 @@ fun R2Screen(
                     } else {
                         bluetoothController.send("ARM_B_RETRACT\n")
                     }
+                }
+            )
+
+            Spacer(
+                modifier = Modifier.height(28.dp)
+            )
+
+            // ==================================================
+            // R2-D2 SOUND & AUDIO SYSTEM
+            // ==================================================
+
+            R2SoundStateCard(
+                connectionState = bluetoothController.connectionState,
+                soundVolume = soundVolume.floatValue,
+                onVolumeChange = { newPct ->
+                    soundVolume.floatValue = newPct
+                    bluetoothController.send("VOLUME:${newPct.toInt()}\n")
+                },
+                onVolUpClick = {
+                    val newPct = (soundVolume.floatValue + 5f).coerceIn(0f, 100f)
+                    soundVolume.floatValue = newPct
+                    bluetoothController.send("VOLUME:${newPct.toInt()}\n")
+                },
+                onVolDownClick = {
+                    val newPct = (soundVolume.floatValue - 5f).coerceIn(0f, 100f)
+                    soundVolume.floatValue = newPct
+                    bluetoothController.send("VOLUME:${newPct.toInt()}\n")
+                },
+                onSoundCommand = { cmd ->
+                    bluetoothController.send("$cmd\n")
+                }
+            )
+
+            Spacer(
+                modifier = Modifier.height(28.dp)
+            )
+
+            // ==================================================
+            // R2-D2 DRIVE CONTROL
+            // ==================================================
+
+            R2DriveStateCard(
+                connectionState = bluetoothController.connectionState,
+                onDriveCommand = { cmd ->
+                    bluetoothController.send("$cmd\n")
                 }
             )
 
@@ -2209,6 +2839,162 @@ fun R2Screen(
                     )
                 }
             }
+
+            Spacer(
+                modifier = Modifier.height(28.dp)
+            )
+
+            // ==================================================
+            // R2-D2 INTERACTIVE MODES
+            // ==================================================
+
+            Card(
+                modifier =
+                    Modifier.fillMaxWidth(),
+                shape =
+                    RoundedCornerShape(20.dp),
+                colors =
+                    CardDefaults.cardColors(
+                        containerColor =
+                            Color(0xFF101923)
+                    ),
+                border =
+                    BorderStroke(
+                        1.dp,
+                        Color(0xFF284866)
+                    )
+            ) {
+                Column(
+                    modifier =
+                        Modifier.padding(20.dp)
+                ) {
+                    Text(
+                        text = "R2-D2 INTERACTIVE MODES",
+                        color = Color(0xFF64C8FF),
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Spacer(
+                        modifier = Modifier.height(16.dp)
+                    )
+
+                    Row(
+                        horizontalArrangement =
+                            Arrangement.spacedBy(12.dp),
+                        modifier =
+                            Modifier.fillMaxWidth()
+                    ) {
+                        Button(
+                            modifier =
+                                Modifier.weight(1f),
+                            enabled =
+                                bluetoothController.isConnected,
+                            colors =
+                                ButtonDefaults.buttonColors(
+                                    containerColor =
+                                        Color(0xFF4CAF50)
+                                ),
+                            onClick = {
+                                bluetoothController.send(
+                                    "HAPPY_MODE\n"
+                                )
+                            }
+                        ) {
+                            Text("HAPPY")
+                        }
+
+                        Button(
+                            modifier =
+                                Modifier.weight(1f),
+                            enabled =
+                                bluetoothController.isConnected,
+                            colors =
+                                ButtonDefaults.buttonColors(
+                                    containerColor =
+                                        Color(0xFF0288D1)
+                                ),
+                            onClick = {
+                                bluetoothController.send(
+                                    "SAD_MODE\n"
+                                )
+                            }
+                        ) {
+                            Text("SAD")
+                        }
+                    }
+
+                    Spacer(
+                        modifier = Modifier.height(12.dp)
+                    )
+
+                    Row(
+                        horizontalArrangement =
+                            Arrangement.spacedBy(12.dp),
+                        modifier =
+                            Modifier.fillMaxWidth()
+                    ) {
+                        Button(
+                            modifier =
+                                Modifier.weight(1f),
+                            enabled =
+                                bluetoothController.isConnected,
+                            colors =
+                                ButtonDefaults.buttonColors(
+                                    containerColor =
+                                        Color(0xFFFF9800)
+                                ),
+                            onClick = {
+                                bluetoothController.send(
+                                    "EXCITED_MODE\n"
+                                )
+                            }
+                        ) {
+                            Text("EXCITED")
+                        }
+
+                        Button(
+                            modifier =
+                                Modifier.weight(1f),
+                            enabled =
+                                bluetoothController.isConnected,
+                            colors =
+                                ButtonDefaults.buttonColors(
+                                    containerColor =
+                                        Color(0xFFE040FB)
+                                ),
+                            onClick = {
+                                bluetoothController.send(
+                                    "DANCE_MODE\n"
+                                )
+                            }
+                        ) {
+                            Text("DANCE")
+                        }
+                    }
+
+                    Spacer(
+                        modifier = Modifier.height(12.dp)
+                    )
+
+                    Button(
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = bluetoothController.isConnected,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFD32F2F)
+                        ),
+                        onClick = {
+                            bluetoothController.send("STOP_AUDIO\n")
+                        }
+                    ) {
+                        Text("STOP AUDIO")
+                    }
+                }
+            }
+
+            Spacer(
+                modifier = Modifier.height(28.dp)
+            )
 
             // ==================================================
             // REAR LOGIC DISPLAY

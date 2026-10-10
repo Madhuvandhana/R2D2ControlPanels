@@ -1,12 +1,94 @@
 #include <Wire.h>
 #include <Adafruit_PWMServoDriver.h>
 #include "BluetoothSerial.h"
+#include <SabertoothSimplified.h>
+#include <SoftwareSerial.h>
+
+// Forward declarations for compiler prototypes
+void domeLeft();
+void domeRight();
+void domeStop();
+void openTop();
+void closeTop();
+void runTest();
+void holoLightsOn();
+void holoLightsOff();
+void frontHoloOn();
+void frontHoloOff();
+void rearHoloOn();
+void rearHoloOff();
+void topHoloOn();
+void topHoloOff();
+void leiaMode();
+void rainbowMode();
+void enableTwitch();
+void disableTwitch();
+void rearLogicMessage(String msg);
+void moveHolo(int pan, int tilt);
+void openChargeDoor();
+void closeChargeDoor();
+void openDataDoor();
+void closeDataDoor();
+void deployArmA();
+void retractArmA();
+void deployArmB();
+void retractArmB();
+void openGripperDoor();
+void closeGripperDoor();
+void gripperOpen();
+void gripperClose();
+void openInterfaceDoor();
+void closeInterfaceDoor();
+void happyMode();
+void sadMode();
+void excitedMode();
+void danceMode();
+
+// TX only (connect to S1 on Sabertooth) - using SoftwareSerial
+#define SABER_TX 27
+#define SABER_RX -1
+
+SoftwareSerial STSerial(SABER_RX, SABER_TX);
+SabertoothSimplified ST(STSerial);
 
 // ==================================================
 // BLUETOOTH
 // ==================================================
 
 BluetoothSerial SerialBT;
+
+// ==================================================
+// MP3 SERIAL (HARDWARE SERIAL 1)
+// ==================================================
+#define MP3_TX_PIN 32
+HardwareSerial mp3Serial(1);
+uint8_t volumePercent = 80;   // Default 80%
+
+const uint8_t greetingTracks[]     = { 1, 2, 3, 4 };
+const uint8_t agreementTracks[]    = { 10, 11 };
+const uint8_t curiosityTracks[]    = { 20, 21 };
+const uint8_t confusionTracks[]    = { 30 };
+const uint8_t disbeliefTracks[]    = { 40 };
+const uint8_t thinkingTracks[]     = { 50 };
+const uint8_t proudTracks[]        = { 60 };
+const uint8_t happyTracks[]        = { 70 };
+const uint8_t concernedTracks[]    = { 80 };
+const uint8_t warningTracks[]      = { 90 };
+const uint8_t scaredTracks[]       = { 100 };
+const uint8_t embarrassedTracks[]  = { 110 };
+const uint8_t teasingTracks[]      = { 120 };
+const uint8_t celebratingTracks[]  = { 130 };
+const uint8_t investigatingTracks[]= { 140 };
+const uint8_t searchingTracks[]    = { 150 };
+const uint8_t foundTracks[]        = { 160 };
+const uint8_t drivingTracks[]      = { 170 };
+const uint8_t dockingTracks[]      = { 180 };
+const uint8_t scanningTracks[]     = { 190 };
+const uint8_t listeningTracks[]    = { 200 };
+const uint8_t acknowledgedTracks[] = { 210 };
+const uint8_t singingTracks[]      = { 220 };
+const uint8_t sleepTracks[]        = { 230 };
+const uint8_t wakeTracks[]         = { 240 };
 
 // ==================================================
 // ASTROPIXELS SERIAL2
@@ -52,8 +134,8 @@ Adafruit_PWMServoDriver bodyPwm =
 // PANEL POSITIONS
 // ==================================================
 
-#define PANEL_CLOSED  180
-#define PANEL_OPEN    25
+#define PANEL_CLOSED  170
+#define PANEL_OPEN    40
 
 // ==================================================
 // STATES
@@ -78,6 +160,7 @@ String incoming = "";
 #define DOME_DIR_PIN 26
 
 #define DOME_PWM_CHANNEL 0
+#define DOME_SPEED 160 // Speed value from 0 to 255 (increased from 60 for heavy loads)
 
 // ==========================================
 // AS5600
@@ -110,7 +193,16 @@ String incoming = "";
 #define SERVO_CLOSED_POS     30
 
 #define ARM_DEPLOY_POS      30
-#define ARM_RETRACT_POS      150
+#define ARM_RETRACT_POS      160
+
+#define ARM_B_DEPLOY_POS      30
+#define ARM_B_RETRACT_POS      180
+
+#define DOOR_OPEN_POS      120
+#define DOOR_CLOSE_POS      30
+
+#define DOOR_B_OPEN_POS      45
+#define DOOR_B_CLOSE_POS      100
 
 // ==================================================
 // SERVO FUNCTION
@@ -126,6 +218,8 @@ void setServo(
       0,
       180
   );
+
+  Serial.printf("[DEBUG] Dome Servo Ch %d -> Angle %d\n", channel, angle);
 
   int pulse = map(
       angle,
@@ -148,6 +242,8 @@ void setBodyServo(
 )
 {
     angle = constrain(angle, 0, 180);
+
+    Serial.printf("[DEBUG] Body Servo Ch %d -> Angle %d\n", channel, angle);
 
     int pulse = map(
         angle,
@@ -436,6 +532,76 @@ void rainbowMode() {
   );
 }
 
+void happyMode() {
+  rearLogicMessage("HAPPY");
+  playRandomTrack(happyTracks, sizeof(happyTracks) / sizeof(happyTracks[0]));
+  
+  domeLeft();
+  delay(300);
+  domeRight();
+  delay(300);
+  domeStop();
+
+  openTop();
+  delay(300);
+  closeTop();
+}
+
+void sadMode() {
+  rearLogicMessage("SAD");
+  playRandomTrack(concernedTracks, sizeof(concernedTracks) / sizeof(concernedTracks[0]));
+  
+  moveHolo(90, 150);
+  
+  digitalWrite(DOME_DIR_PIN, LOW);
+  ledcWrite(DOME_PWM_PIN, DOME_SPEED / 2);
+  delay(400);
+  domeStop();
+  
+  delay(1000);
+  moveHolo(90, 90);
+}
+
+void excitedMode() {
+  rearLogicMessage("EXCITED");
+  playRandomTrack(celebratingTracks, sizeof(celebratingTracks) / sizeof(celebratingTracks[0]));
+  
+  openTop();
+  
+  for (int i = 0; i < 3; i++) {
+    moveHolo(70, 70);
+    domeLeft();
+    delay(200);
+    moveHolo(110, 110);
+    domeRight();
+    delay(200);
+  }
+  
+  domeStop();
+  moveHolo(90, 90);
+  closeTop();
+}
+
+void danceMode() {
+  rearLogicMessage("DANCE");
+  playTrack(253);
+  
+  for (int step = 0; step < 4; step++) {
+    openTop();
+    domeLeft();
+    moveHolo(60, 90);
+    delay(500);
+    
+    closeTop();
+    domeRight();
+    moveHolo(120, 90);
+    delay(500);
+  }
+  
+  domeStop();
+  moveHolo(90, 90);
+}
+
 // ==================================================
 // TWITCH
 // ==================================================
@@ -562,11 +728,20 @@ void setPanels(
   );
 }
 
+void detachDomePanels() {
+  domePwm.setPWM(PANEL_1, 0, 4096);
+  domePwm.setPWM(PANEL_2, 0, 4096);
+  domePwm.setPWM(PANEL_3, 0, 4096);
+  domePwm.setPWM(PANEL_4, 0, 4096);
+}
+
 // ==================================================
 // OPEN PANELS
 // ==================================================
 
 void openTop() {
+
+  // domeStop();
 
   if (panelsOpen) {
     return;
@@ -578,13 +753,13 @@ void openTop() {
 
       angle >= PANEL_OPEN;
 
-      angle -= 2
+      angle -= 1
 
   ) {
 
     setPanels(angle);
 
-    delay(15);
+    delay(25);
   }
 
   panelsOpen = true;
@@ -592,6 +767,10 @@ void openTop() {
   Serial.println(
       "PANELS OPEN"
   );
+
+  delay(300);
+  detachDomePanels();
+  // domeStop();
 }
 
 // ==================================================
@@ -599,6 +778,8 @@ void openTop() {
 // ==================================================
 
 void closeTop() {
+
+  // domeStop();
 
   if (!panelsOpen) {
     return;
@@ -610,13 +791,13 @@ void closeTop() {
 
       angle <= PANEL_CLOSED;
 
-      angle += 2
+      angle += 1
 
   ) {
 
     setPanels(angle);
 
-    delay(15);
+    delay(25);
   }
 
   panelsOpen = false;
@@ -624,6 +805,10 @@ void closeTop() {
   Serial.println(
       "PANELS CLOSED"
   );
+
+  delay(300);
+  detachDomePanels();
+  // domeStop();
 }
 
 void openChargeDoor() {
@@ -643,19 +828,19 @@ void closeDataDoor() {
 }
 
 void openGripperDoor() {
-  setBodyServo(GRIPPER_DOOR, SERVO_OPEN_POS);
+  setBodyServo(GRIPPER_DOOR, DOOR_OPEN_POS);
 }
 
 void closeGripperDoor() {
-  setBodyServo(GRIPPER_DOOR, SERVO_CLOSED_POS);
+  setBodyServo(GRIPPER_DOOR, DOOR_CLOSE_POS);
 }
 
 void openInterfaceDoor() {
-  setBodyServo(INTERFACE_DOOR, SERVO_OPEN_POS);
+  setBodyServo(INTERFACE_DOOR, DOOR_B_OPEN_POS);
 }
 
 void closeInterfaceDoor() {
-  setBodyServo(INTERFACE_DOOR, SERVO_CLOSED_POS);
+  setBodyServo(INTERFACE_DOOR, DOOR_B_CLOSE_POS);
 }
 
 
@@ -668,11 +853,11 @@ void retractArmA() {
 }
 
 void deployArmB() {
-  setBodyServo(ARM_B_LIFT, ARM_DEPLOY_POS);
+  setBodyServo(ARM_B_LIFT, ARM_B_DEPLOY_POS);
 }
 
 void retractArmB() {
-  setBodyServo(ARM_B_LIFT, ARM_RETRACT_POS);
+  setBodyServo(ARM_B_LIFT, ARM_B_RETRACT_POS);
 }
 
 void gripperOpen() {
@@ -822,6 +1007,113 @@ void topHoloOff() {
 }
 
 // ==================================================
+// SABERTOOTH TANK DRIVE RAMPING CONTROL
+// ==================================================
+
+// Target speeds set by incoming commands
+int targetLeft = 0;
+int targetRight = 0;
+
+// Current motor speeds ramped progressively
+int currentLeft = 0;
+int currentRight = 0;
+
+// Ramping acceleration limit (maximum speed change units per 20ms update)
+// Higher values = quicker response; lower values = smoother acceleration
+#define ACCEL_LIMIT 3
+
+void stopMotors()
+{
+    targetLeft = 0;
+    targetRight = 0;
+    currentLeft = 0;
+    currentRight = 0;
+    ST.motor(1, 0);
+    ST.motor(2, 0);
+}
+
+void drive(int left, int right)
+{
+    // Swap and invert channels to correct motor wiring directions
+    int newLeft = -right;
+    int newRight = -left;
+
+    // Constrain to Sabertooth Simplified limits: -127 to 127
+    targetLeft = constrain(newLeft, -127, 127);
+    targetRight = constrain(newRight, -127, 127);
+
+    Serial.printf("Target L:%d  R:%d\n", targetLeft, targetRight);
+}
+
+// Periodically runs inside loop() to smooth speed transitions
+void updateRamping()
+{
+    static unsigned long lastRampTime = 0;
+    unsigned long now = millis();
+    
+    if (now - lastRampTime >= 20) // Update every 20ms
+    {
+        lastRampTime = now;
+        bool changed = false;
+
+        // Ramp Left Motor
+        if (currentLeft < targetLeft) {
+            currentLeft = min(currentLeft + ACCEL_LIMIT, targetLeft);
+            changed = true;
+        } else if (currentLeft > targetLeft) {
+            currentLeft = max(currentLeft - ACCEL_LIMIT, targetLeft);
+            changed = true;
+        }
+
+        // Ramp Right Motor
+        if (currentRight < targetRight) {
+            currentRight = min(currentRight + ACCEL_LIMIT, targetRight);
+            changed = true;
+        } else if (currentRight > targetRight) {
+            currentRight = max(currentRight - ACCEL_LIMIT, targetRight);
+            changed = true;
+        }
+
+        // Send speed updates to Sabertooth if speed values changed
+        if (changed) {
+            ST.motor(1, currentLeft);
+            ST.motor(2, currentRight);
+        }
+    }
+}
+
+void playTrack(uint8_t track) {
+  mp3Serial.write('t');
+  mp3Serial.write(track);
+  mp3Serial.flush();
+  delay(75);
+}
+
+void playRandomTrack(const uint8_t tracks[], size_t count) {
+  uint8_t track = tracks[random(count)];
+  Serial.print("Random Track = ");
+  Serial.println(track);
+  playTrack(track);
+}
+
+void stopTrack() {
+  mp3Serial.write('O');
+  mp3Serial.flush();
+  delay(50);
+}
+
+void setVolumePercent(uint8_t percent) {
+  percent = constrain(percent, 0, 100);
+  volumePercent = percent;
+  uint8_t mp3Volume = map(percent, 0, 100, 255, 0);
+  mp3Serial.write('v');
+  mp3Serial.write(mp3Volume);
+  mp3Serial.flush();
+  delay(75);
+  Serial.printf("Volume %d%% -> MP3=%d\n", percent, mp3Volume);
+}
+
+// ==================================================
 // COMMAND PARSER
 // ==================================================
 
@@ -830,6 +1122,7 @@ void handleCommand(
 ) {
 
   cmd.trim();
+  cmd.toUpperCase();
 
   Serial.print(
       "CMD: "
@@ -837,11 +1130,31 @@ void handleCommand(
 
   Serial.println(cmd);
 
+  if (cmd == "STOP")
+  {
+      stopMotors();
+  }
+  else if (cmd == "STOP_AUDIO")
+  {
+      stopTrack();
+  }
+  else if (cmd.startsWith("DRIVE:"))
+  {
+      int comma = cmd.indexOf(',');
+
+      if (comma > 0)
+      {
+          int left = cmd.substring(6, comma).toInt();
+          int right = cmd.substring(comma + 1).toInt();
+
+          drive(left, right);
+      }
+  }
   // ==========================================
   // PANELS
   // ==========================================
 
-  if (cmd == "OPEN_TOP") {
+  else if (cmd == "OPEN_TOP") {
 
     openTop();
   }
@@ -934,6 +1247,30 @@ else if (
   }
 
   else if (
+      cmd == "HAPPY_MODE"
+  ) {
+    happyMode();
+  }
+
+  else if (
+      cmd == "SAD_MODE"
+  ) {
+    sadMode();
+  }
+
+  else if (
+      cmd == "EXCITED_MODE"
+  ) {
+    excitedMode();
+  }
+
+  else if (
+      cmd == "DANCE_MODE"
+  ) {
+    danceMode();
+  }
+
+  else if (
       cmd == "TWITCH_ON"
   ) {
 
@@ -1015,6 +1352,11 @@ else if (
       domeStop();
   }
 
+  else if(cmd == "DOME_HOME")
+  {
+      domeStop();
+  }
+
   else if(cmd == "CHARGE_OPEN")
 {
     openChargeDoor();
@@ -1078,6 +1420,135 @@ else if(cmd == "INTERFACE_CLOSE")
 {
     closeInterfaceDoor();
 }
+
+  // ==========================================
+  // MP3 TRIGGER SOUND COMMANDS
+  // ==========================================
+  else if(cmd == "GREETING")
+  {
+      playRandomTrack(greetingTracks, sizeof(greetingTracks) / sizeof(greetingTracks[0]));
+  }
+  else if(cmd == "AGREEMENT")
+  {
+      playRandomTrack(agreementTracks, sizeof(agreementTracks) / sizeof(agreementTracks[0]));
+  }
+  else if(cmd == "CURIOSITY")
+  {
+      playRandomTrack(curiosityTracks, sizeof(curiosityTracks) / sizeof(curiosityTracks[0]));
+  }
+  else if(cmd == "CONFUSION")
+  {
+      playRandomTrack(confusionTracks, sizeof(confusionTracks) / sizeof(confusionTracks[0]));
+  }
+  else if(cmd == "DISBELIEF")
+  {
+      playRandomTrack(disbeliefTracks, sizeof(disbeliefTracks) / sizeof(disbeliefTracks[0]));
+  }
+  else if(cmd == "THINKING")
+  {
+      playRandomTrack(thinkingTracks, sizeof(thinkingTracks) / sizeof(thinkingTracks[0]));
+  }
+  else if(cmd == "PROUD")
+  {
+      playRandomTrack(proudTracks, sizeof(proudTracks) / sizeof(proudTracks[0]));
+  }
+  else if(cmd == "HAPPY")
+  {
+      playRandomTrack(happyTracks, sizeof(happyTracks) / sizeof(happyTracks[0]));
+  }
+  else if(cmd == "CONCERNED")
+  {
+      playRandomTrack(concernedTracks, sizeof(concernedTracks) / sizeof(concernedTracks[0]));
+  }
+  else if(cmd == "WARNING")
+  {
+      playRandomTrack(warningTracks, sizeof(warningTracks) / sizeof(warningTracks[0]));
+  }
+  else if(cmd == "SCARED")
+  {
+      playRandomTrack(scaredTracks, sizeof(scaredTracks) / sizeof(scaredTracks[0]));
+  }
+  else if(cmd == "EMBARRASSED")
+  {
+      playRandomTrack(embarrassedTracks, sizeof(embarrassedTracks) / sizeof(embarrassedTracks[0]));
+  }
+  else if(cmd == "TEASING")
+  {
+      playRandomTrack(teasingTracks, sizeof(teasingTracks) / sizeof(teasingTracks[0]));
+  }
+  else if(cmd == "CELEBRATING")
+  {
+      playRandomTrack(celebratingTracks, sizeof(celebratingTracks) / sizeof(celebratingTracks[0]));
+  }
+  else if(cmd == "INVESTIGATING")
+  {
+      playRandomTrack(investigatingTracks, sizeof(investigatingTracks) / sizeof(investigatingTracks[0]));
+  }
+  else if(cmd == "SEARCHING")
+  {
+      playRandomTrack(searchingTracks, sizeof(searchingTracks) / sizeof(searchingTracks[0]));
+  }
+  else if(cmd == "FOUND")
+  {
+      playRandomTrack(foundTracks, sizeof(foundTracks) / sizeof(foundTracks[0]));
+  }
+  else if(cmd == "DRIVING")
+  {
+      playRandomTrack(drivingTracks, sizeof(drivingTracks) / sizeof(drivingTracks[0]));
+  }
+  else if(cmd == "DOCKING")
+  {
+      playRandomTrack(dockingTracks, sizeof(dockingTracks) / sizeof(dockingTracks[0]));
+  }
+  else if(cmd == "SCANNING")
+  {
+      playRandomTrack(scanningTracks, sizeof(scanningTracks) / sizeof(scanningTracks[0]));
+  }
+  else if(cmd == "LISTENING")
+  {
+      playRandomTrack(listeningTracks, sizeof(listeningTracks) / sizeof(listeningTracks[0]));
+  }
+  else if(cmd == "ACKNOWLEDGED")
+  {
+      playRandomTrack(acknowledgedTracks, sizeof(acknowledgedTracks) / sizeof(acknowledgedTracks[0]));
+  }
+  else if(cmd == "SINGING")
+  {
+      playRandomTrack(singingTracks, sizeof(singingTracks) / sizeof(singingTracks[0]));
+  }
+  else if(cmd == "SLEEP")
+  {
+      playRandomTrack(sleepTracks, sizeof(sleepTracks) / sizeof(sleepTracks[0]));
+  }
+  else if(cmd == "WAKE")
+  {
+      playRandomTrack(wakeTracks, sizeof(wakeTracks) / sizeof(wakeTracks[0]));
+  }
+  else if(cmd == "SCREAM")
+  {
+      playTrack(254);
+  }
+  else if(cmd == "STAR_WARS")
+  {
+      playTrack(250);
+  }
+  else if(cmd == "DISCO")
+  {
+      playTrack(253);
+  }
+  else if(cmd == "MARCH")
+  {
+      playTrack(252);
+  }
+  else if(cmd == "CANTINA")
+  {
+      playTrack(251);
+  }
+  else if(cmd.startsWith("VOLUME:"))
+  {
+      int v = cmd.substring(7).toInt();
+      setVolumePercent(v);
+  }
 }
 
 // ==================================================
@@ -1092,6 +1563,18 @@ void setup() {
   Serial.println(
       "R2 SYSTEM STARTING"
   );
+
+  // ==========================================
+  // MP3 TRIGGER SETUP (HARDWARE SERIAL 1)
+  // ==========================================
+  mp3Serial.begin(
+      38400,
+      SERIAL_8N1,
+      -1,              // TX only
+      MP3_TX_PIN
+  );
+  delay(10);
+  setVolumePercent(volumePercent);
 
   // ==========================================
   // BLUETOOTH
@@ -1116,7 +1599,24 @@ void setup() {
       17
   );
 
-  delay(3000);
+  // ==========================================
+  // SABERTOOTH (SOFTWARE SERIAL)
+  // ==========================================
+
+  STSerial.begin(9600);
+
+  // Send autobaud character (0xAA) to sync Sabertooth baud rate
+  delay(1000); 
+  STSerial.write(0xAA);
+  delay(100);
+
+  stopMotors();
+
+  Serial.println(
+      "SABERTOOTH MOTOR CONTROLLER READY"
+  );
+
+  delay(2000);
 
   // ==========================================
   // ENABLE REMOTE MODE
@@ -1196,66 +1696,56 @@ void setup() {
 
   pinMode(DOME_DIR_PIN, OUTPUT);
 
-  ledcSetup(
-    DOME_PWM_CHANNEL,
+  ledcAttach(
+    DOME_PWM_PIN,
     20000,
     8
-);
-
-  ledcAttachPin(
-    DOME_PWM_PIN,
-    DOME_PWM_CHANNEL
-);
+  );
 
   ledcWrite(
-    DOME_PWM_CHANNEL,
+    DOME_PWM_PIN,
     0
-);
+  );
 
-for(byte addr=1; addr<127; addr++)
-{
-    Wire.beginTransmission(addr);
+  Serial.println("[DEBUG] Scanning I2C Bus for PCA9685 boards...");
+  bool domeBoardFound = false;
+  bool bodyBoardFound = false;
 
-    if(Wire.endTransmission()==0)
-    {
-        Serial.print("Found: 0x");
-        Serial.println(addr, HEX);
-    }
-}
+  for(byte addr=1; addr<127; addr++)
+  {
+      Wire.beginTransmission(addr);
+
+      if(Wire.endTransmission()==0)
+      {
+          Serial.print("[DEBUG] Found I2C Device at: 0x");
+          Serial.println(addr, HEX);
+          if (addr == 0x40) {
+              Serial.println("  -> SUCCESS: PCA9685 Dome Board (0x40) Detected!");
+              domeBoardFound = true;
+          }
+          else if (addr == 0x41) {
+              Serial.println("  -> SUCCESS: PCA9685 Body Board (0x41) Detected!");
+              bodyBoardFound = true;
+          }
+      }
+  }
+
+  if (!domeBoardFound) {
+      Serial.println("[ERROR] WARNING: PCA9685 Dome Board (0x40) NOT detected on I2C bus!");
+  }
+  if (!bodyBoardFound) {
+      Serial.println("[ERROR] WARNING: PCA9685 Body Board (0x41) NOT detected on I2C bus!");
+  }
 
 // domeGoto(0);
 
 }
 
-int readAS5600Angle() {
-
-  Wire.beginTransmission(0x36);
-  Wire.write(0x0E);
-
-  Wire.endTransmission();
-
-  Wire.requestFrom(0x36, 2);
-
-  int high = Wire.read();
-  int low = Wire.read();
-
-  int raw = (high << 8) | low;
-
-  raw &= 0x0FFF;
-
-  return map(
-      raw,
-      0,
-      4095,
-      0,
-      360
-  );
-}
 
 void domeStop() {
 
   ledcWrite(
-      DOME_PWM_CHANNEL,
+      DOME_PWM_PIN,
       0
   );
 }
@@ -1268,8 +1758,8 @@ void domeLeft() {
   );
 
   ledcWrite(
-      DOME_PWM_CHANNEL,
-      100
+      DOME_PWM_PIN,
+      DOME_SPEED
   );
 }
 
@@ -1281,50 +1771,11 @@ void domeRight() {
   );
 
   ledcWrite(
-      DOME_PWM_CHANNEL,
-      100
+      DOME_PWM_PIN,
+      DOME_SPEED
   );
 }
 
-void domeGoto(
-    int targetAngle
-) {
-
-  int current =
-      readAS5600Angle();
-
-  int error =
-      targetAngle -
-      current;
-
-  if (abs(error) < 3) {
-
-    domeStop();
-
-    return;
-  }
-
-  if (error > 0) {
-
-    domeRight();
-
-  } else {
-
-    domeLeft();
-  }
-
-  while (
-      abs(
-          targetAngle -
-          readAS5600Angle()
-      ) > 3
-  ) {
-
-    delay(10);
-  }
-
-  domeStop();
-}
 
 
 
@@ -1352,6 +1803,14 @@ void loop() {
     } else {
 
       incoming += c;
+      
+      // Buffer guard: discard if command is malformed or too long (prevents overflow)
+      if (incoming.length() > 64) {
+        incoming = "";
+      }
     }
   }
+
+  // Run the non-blocking motor ramping loop
+  updateRamping();
 }
