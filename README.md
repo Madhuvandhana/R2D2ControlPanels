@@ -6,11 +6,11 @@ A dual Android application and ESP32 firmware system designed to control interac
 
 ## Interactive App Demonstration
 
-Below is a walkthrough demonstration of the custom Jetpack Compose Android controller app operating the R2-D2 Dome interface:
+Below is a walkthrough demonstration of the custom Jetpack Compose Android controller app operating the R2-D2 Dome interface, interactive animation modes, sound FX, and body actuators:
 
-![Walkthrough App Demo](r2controlsapp.gif)
+![Latest Android App Demo](r2d2-demo/Latest_AndroidApp.gif)
 
-*(Note: If the GIF does not render, you can view the raw file at `r2controlsapp.gif` inside the repository).*
+*(Note: If the GIF does not render, you can view the raw file at `r2d2-demo/Latest_AndroidApp.gif` inside the repository. The legacy dome walkthrough is also available at `r2controlsapp.gif`).*
 
 ---
 
